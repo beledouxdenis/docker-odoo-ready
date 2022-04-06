@@ -1,0 +1,21 @@
+version: '3.7'
+services:
+    odoo:
+        build: .
+        volumes:
+            - "./bin/entrypoint:/usr/local/bin/entrypoint:ro"
+            - "./bin/odoo:/usr/local/bin/odoo:ro"
+            - "~/src:/home/odoo/src:ro"
+            - "/var/run/postgresql:/var/run/postgresql:ro"
+            - "~:/home/${USER}:ro"
+            - "~/.local/share/Odoo:/home/${USER}/.local/share/Odoo"
+            - "~/.ipython:/home/${USER}/.ipython"
+            - "~/.config/pudb:/home/${USER}/.config/pudb"
+        entrypoint: entrypoint
+        command: odoo
+        environment:
+          USER: ${USER}
+          UID: ${USER_ID}
+        cap_add:
+          - NET_ADMIN
+          - NET_RAW

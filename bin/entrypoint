@@ -1,0 +1,59 @@
+#!/usr/bin/env python3
+import argparse
+import os
+from subprocess import run
+
+
+def demote(uid, gid):
+    def set_ids():
+        os.setgid(gid)
+        os.setuid(uid)
+
+    return set_ids
+
+
+def restrict_network(domains):
+    for rule in [
+        # Allow DNS
+        "-A OUTPUT --protocol udp --dport 53 -j ACCEPT",
+        # Allow connections from this host to the local network.
+        # Mandatory because docker forward DNS (port 53) to a local destination with a random port
+        # e.g.
+        # Chain DOCKER_OUTPUT (1 references)
+        # target     prot opt source               destination
+        # DNAT       tcp  --  0.0.0.0/0            127.0.0.11           tcp dpt:53 to:127.0.0.11:38617
+        # DNAT       udp  --  0.0.0.0/0            127.0.0.11           udp dpt:53 to:127.0.0.11:59732
+        # Chain DOCKER_POSTROUTING (1 references)
+        # target     prot opt source               destination
+        # SNAT       tcp  --  127.0.0.11           0.0.0.0/0            tcp spt:38617 to::53
+        # SNAT       udp  --  127.0.0.11           0.0.0.0/0            udp spt:59732 to::53
+        "-A OUTPUT --destination 127.0.0.0/16 -j ACCEPT",
+        # Allow HTTP(S) connections from this host to whitelisted domains
+        f"-A OUTPUT --protocol tcp --dport 80 --destination {','.join(domains)} -j ACCEPT",
+        f"-A OUTPUT --protocol tcp --dport 443 --destination {','.join(domains)} -j ACCEPT",
+        # Allow existing connections to continue
+        "-A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT",
+        # Reject the rest
+        "-A OUTPUT -j REJECT",
+    ]:
+        run(["iptables"] + rule.split())
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--domain-whitelist",
+        help="Comma-separated domains. Restrict internet to HTTP connections to these domains",
+        default="ocn.odoo.com,pad.odoo.com",
+    )
+    args, extra_args = parser.parse_known_args()
+
+    if args.domain_whitelist:
+        restrict_network(args.domain_whitelist.split(","))
+
+    login = os.environ["USER"]
+    uid = int(os.environ["UID"])
+
+    run(["useradd", login, "-l", "-s", "/bin/bash", "-u", str(uid)])
+
+    run(extra_args, preexec_fn=demote(uid, uid), env=dict(os.environ, HOME=f"/home/{login}"))

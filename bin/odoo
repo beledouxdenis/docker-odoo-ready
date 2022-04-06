@@ -1,0 +1,44 @@
+#!/usr/bin/env python3
+import argparse
+import importlib.util
+import re
+from pathlib import Path
+from subprocess import run
+
+VENVS = "/home/odoo/venvs"
+COMMUNITY = "/home/odoo/src/odoo/%(branch)s"
+ENTERPRISE = "/home/odoo/src/enterprise/%(branch)s"
+THEMES = "/home/odoo/src/design-themes/%(branch)s"
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("branch", help="Odoo branch", nargs="?", default="master")
+    args, extra_args = parser.parse_known_args()
+
+    template_context = {}
+
+    odoo_branch = template_context["branch"] = args.branch
+    odoo_community = Path(COMMUNITY % template_context)
+    odoo_release_file = next(odoo_community.glob("*/release.py"))
+    spec = importlib.util.spec_from_file_location("odoo_release", odoo_release_file)
+    odoo_release = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(odoo_release)
+    odoo_version = float(re.sub("[^0-9.]", "", odoo_release.version))
+
+    if "--addons-path" not in extra_args:
+        addons_path = [odoo_community / "addons"]
+        if odoo_version >= 9.0:
+            addons_path.append(Path(ENTERPRISE % template_context))
+        if odoo_version >= 8.0:
+            addons_path.append(Path(THEMES % template_context))
+        addons_path = ",".join(str(path) for path in addons_path if path.exists())
+        extra_args.extend(["--addons-path", addons_path])
+
+    venvs = sorted(Path(VENVS).glob("*"), key=lambda d: float(d.name), reverse=True)
+    venv = next((venv for venv in venvs if odoo_version >= float(venv.name)), None)
+    python_bin = venv / "bin" / "python"
+
+    odoo_bin_name = "odoo-bin" if odoo_version > 9.0 else "openerp-server"
+    odoo_bin = odoo_community / odoo_bin_name
+
+    run([python_bin, odoo_bin, *extra_args])
