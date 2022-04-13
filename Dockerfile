@@ -22,6 +22,8 @@ RUN apt-get update -y && apt-get upgrade -y                                     
     iptables                                                                                                           \
     # Install Python
     python2.7-dev python3.6-dev python3.8-dev                                                                          \
+    # Install the Python dependencies for the binaries of this repository
+    python3-psycopg2                                                                                                   \
     # Install virtualenv, to be able to have multiple environments according to the different versions of Odoo
     virtualenv                                                                                                         \
     # Install dependencies required for Odoo python dependencies

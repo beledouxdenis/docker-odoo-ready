@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import importlib.util
+import psycopg2
 import re
 from pathlib import Path
 from subprocess import run
@@ -12,18 +13,46 @@ THEMES = "/home/odoo/src/design-themes/%(branch)s"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("branch", help="Odoo branch", nargs="?", default="master")
+    parser.add_argument("--branch", "-b", help="Odoo branch")
+    parser.add_argument("--database", "-d", help="Database")
     args, extra_args = parser.parse_known_args()
 
-    template_context = {}
+    if args.database:
+        extra_args.extend(["--database", args.database])
 
-    odoo_branch = template_context["branch"] = args.branch
+    if args.branch:
+        odoo_branch = args.branch
+        odoo_release_file = next(Path(COMMUNITY % {"branch": odoo_branch}).glob("*/release.py"))
+        spec = importlib.util.spec_from_file_location("odoo_release", odoo_release_file)
+        odoo_release = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(odoo_release)
+        odoo_version = odoo_release.version
+    elif args.database:
+        try:
+            with psycopg2.connect(database=args.database) as conn:
+                with conn.cursor() as cr:
+                    try:
+                        cr.execute("SELECT latest_version FROM ir_module_module WHERE name = 'base'")
+                    except psycopg2.errors.UndefinedTable:
+                        parser.error(f"The database {args.database} is not initialized. The odoo version cannot be guessed.")
+                    odoo_version, = cr.fetchone()
+                    odoo_branch = odoo_version.replace("~", "-")
+                    if "saas" in odoo_branch:
+                        if odoo_branch.startswith("saas"):
+                            odoo_branch, = re.findall(r"saas-\d+\.\d+", odoo_branch)
+                        else:
+                            odoo_branch, = re.findall(r"saas-\d+", odoo_branch)
+                    else:
+                        odoo_branch = re.findall(r"\d+.\d+", odoo_branch)[0]
+        except psycopg2.OperationalError:
+            parser.error(f"Cannot connect to the database {args.database}")
+    else:
+        parser.error('You must provide at least --branch or --database')
+
+    odoo_version = float(".".join(re.findall(r"\d+", odoo_version)[0:2]))
+
+    template_context = {"branch": odoo_branch}
     odoo_community = Path(COMMUNITY % template_context)
-    odoo_release_file = next(odoo_community.glob("*/release.py"))
-    spec = importlib.util.spec_from_file_location("odoo_release", odoo_release_file)
-    odoo_release = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(odoo_release)
-    odoo_version = float(re.sub("[^0-9.]", "", odoo_release.version))
 
     if "--addons-path" not in extra_args:
         addons_path = [odoo_community / "addons"]
