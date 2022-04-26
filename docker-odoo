@@ -1,10 +1,31 @@
 #!/usr/bin/env python3
+import argparse
 import os
-import sys
 from subprocess import run
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
+parser.add_argument("--longpolling-port", help="Longpolling Port")
+
+args, extra_args = parser.parse_known_args()
+
+if not args.longpolling_port:
+    args.longpolling_port = str(int(args.http_port) + 3)
+
+extra_args.extend(["--http-port", args.http_port, "--longpolling-port", args.longpolling_port])
+
 run(
-    ["docker-compose", "run", "-p", "8069:8069", "odoo", "odoo"] + sys.argv[1:],
+    [
+        "docker-compose",
+        "run",
+        "-p",
+        f"{args.http_port}:{args.http_port}",
+        "-p",
+        f"{args.longpolling_port}:{args.longpolling_port}",
+        "odoo",
+        "odoo",
+    ]
+    + extra_args,
     env=dict(os.environ, USER_ID=str(os.getuid())),
     cwd=os.path.dirname(os.path.realpath(__file__)),
 )
