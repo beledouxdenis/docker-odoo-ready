@@ -74,7 +74,7 @@ RUN                                                                             
     # Upgrade dependencies
     markdown simplejson==3.17.5                                                                                        \
     # Debugging tools
-    ipython pudb jedi==0.17.2
+    ipython==7.13.0 pudb==2019.2 urwid==2.0.1 jedi==0.15.2
 
 # Virtualenv and PIP install for Odoo from 15.0 to Odoo master
 RUN                                                                                                                    \
@@ -92,4 +92,4 @@ RUN                                                                             
     # Upgrade dependencies
     markdown simplejson==3.17.5                                                                                        \
     # Debugging tools
-    ipython pudb jedi==0.17.2
+    ipython==7.13.0 pudb==2019.2 urwid==2.0.1 jedi==0.15.2
