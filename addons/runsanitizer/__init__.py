@@ -19,6 +19,8 @@ except ImportError:
     except ImportError:
         from openerp.addons.web.controllers import main
 
+STANDARD_MODULES = get_modules()
+
 
 def convert_custom_models_and_fields(cr):
     """
@@ -37,13 +39,12 @@ def is_standard_asset(url, filename):
     """
     Indicates if the asset identified by (url, filename) is a standard one or not
     """
-    standard_modules = get_modules()
 
     # check the url refers to a custom module
     if url:
         url_parts = url.split("/", 2)
         if len(url_parts) > 1:
-            return url_parts[1] in standard_modules
+            return url_parts[1] in STANDARD_MODULES
 
     # check that the filename exists
     if filename:
