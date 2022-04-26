@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 import argparse
 import importlib.util
-import psycopg2
 import re
 from pathlib import Path
 from subprocess import run
+
+import psycopg2
 
 VENVS = "/home/odoo/venvs"
 COMMUNITY = "/home/odoo/src/odoo/%(branch)s"
 ENTERPRISE = "/home/odoo/src/enterprise/%(branch)s"
 THEMES = "/home/odoo/src/design-themes/%(branch)s"
+UPGRADE = "/home/odoo/src/upgrade"
+LOCAL = "/home/odoo/src/docker-odoo-ready/addons"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--branch", "-b", help="Odoo branch")
     parser.add_argument("--database", "-d", help="Database")
+    parser.add_argument("--addons-path", help="Addon paths")
     args, extra_args = parser.parse_known_args()
 
     if args.database:
@@ -34,34 +38,41 @@ if __name__ == "__main__":
                     try:
                         cr.execute("SELECT latest_version FROM ir_module_module WHERE name = 'base'")
                     except psycopg2.errors.UndefinedTable:
-                        parser.error(f"The database {args.database} is not initialized. The odoo version cannot be guessed.")
-                    odoo_version, = cr.fetchone()
+                        parser.error(
+                            "The database %s is not initialized. The odoo version cannot be guessed.", args.database
+                        )
+                    (odoo_version,) = cr.fetchone()
                     odoo_branch = odoo_version.replace("~", "-")
                     if "saas" in odoo_branch:
                         if odoo_branch.startswith("saas"):
-                            odoo_branch, = re.findall(r"saas-\d+\.\d+", odoo_branch)
+                            (odoo_branch,) = re.findall(r"saas-\d+\.\d+", odoo_branch)
                         else:
-                            odoo_branch, = re.findall(r"saas-\d+", odoo_branch)
+                            (odoo_branch,) = re.findall(r"saas-\d+", odoo_branch)
                     else:
                         odoo_branch = re.findall(r"\d+.\d+", odoo_branch)[0]
         except psycopg2.OperationalError:
-            parser.error(f"Cannot connect to the database {args.database}")
+            parser.error("Cannot connect to the database %s", args.database)
     else:
-        parser.error('You must provide at least --branch or --database')
+        parser.error("You must provide at least --branch or --database")
 
     odoo_version = float(".".join(re.findall(r"\d+", odoo_version)[0:2]))
 
     template_context = {"branch": odoo_branch}
     odoo_community = Path(COMMUNITY % template_context)
 
-    if "--addons-path" not in extra_args:
-        addons_path = [odoo_community / "addons"]
-        if odoo_version >= 9.0:
-            addons_path.append(Path(ENTERPRISE % template_context))
-        if odoo_version >= 8.0:
-            addons_path.append(Path(THEMES % template_context))
-        addons_path = ",".join(str(path) for path in addons_path if path.exists())
-        extra_args.extend(["--addons-path", addons_path])
+    addons_path = args.addons_path.split(",") if args.addons_path else []
+    if not addons_path:
+        addons_path.append(str(odoo_community / "addons"))
+        for path in [ENTERPRISE, THEMES]:
+            path = path % template_context
+            if Path(path).exists():
+                addons_path.append(path)
+    addons_path.append(LOCAL)
+    addons_path = ",".join(str(path) for path in addons_path)
+    extra_args.extend(["--addons-path", addons_path])
+
+    if "--upgrade-path" not in extra_args and odoo_version >= 13.0:
+        extra_args.extend(["--upgrade-path", str(Path(UPGRADE) / "migrations")])
 
     venvs = sorted(Path(VENVS).glob("*"), key=lambda d: float(d.name), reverse=True)
     venv = next((venv for venv in venvs if odoo_version >= float(venv.name)), None)
