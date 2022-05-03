@@ -5,6 +5,7 @@
     "description": "See summary.",
     "version": "0.1",
     "author": "Odoo",
+    "license": "LGPL-3",
     "category": "Internal",
     "website": "http://www.odoo.com",
     "depends": ["base"],
