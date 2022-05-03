@@ -2,6 +2,7 @@ version: '3.7'
 services:
     odoo:
         build: .
+        network_mode: "bridge"
         volumes:
             - "./bin/entrypoint:/usr/local/bin/entrypoint:ro"
             - "./bin/odoo:/usr/local/bin/odoo:ro"
