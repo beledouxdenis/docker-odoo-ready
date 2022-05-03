@@ -57,16 +57,20 @@ if __name__ == "__main__":
 
     odoo_version = float(".".join(re.findall(r"\d+", odoo_version)[0:2]))
 
-    template_context = {"branch": odoo_branch}
-    odoo_community = Path(COMMUNITY % template_context)
+    odoo_community = Path(COMMUNITY % {"branch": odoo_branch})
 
     addons_path = args.addons_path.split(",") if args.addons_path else []
     if not addons_path:
         addons_path.append(str(odoo_community / "addons"))
         for path in [ENTERPRISE, THEMES]:
-            path = path % template_context
-            if Path(path).exists():
-                addons_path.append(path)
+            for branch in (
+                odoo_branch,
+                "-".join(odoo_branch.split("-")[0:2]) if odoo_branch.startswith("saas-") else odoo_branch.split("-")[0],
+            ):
+                p = path % {"branch": branch}
+                if Path(p).exists():
+                    addons_path.append(p)
+                    break
     addons_path.append(LOCAL)
     addons_path = ",".join(str(path) for path in addons_path)
     extra_args.extend(["--addons-path", addons_path])
