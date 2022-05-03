@@ -25,7 +25,9 @@ RUN apt-get update -y && apt-get upgrade -y                                     
     # Install the Python dependencies for the binaries of this repository
     python3-psycopg2                                                                                                   \
     # Install virtualenv, to be able to have multiple environments according to the different versions of Odoo
-    virtualenv                                                                                                         \
+    # From Python 3.3, the module venv should be used to create a Python virtual environment, using `python -m venv`
+    # Before that, virtualenv should be used
+    virtualenv python3.6-venv python3.8-venv                                                                           \
     # Install dependencies required for Odoo python dependencies
     build-essential gcc libpq-dev libxml2-dev libxslt1-dev libsasl2-dev libldap2-dev libssl-dev libjpeg8-dev           \
     zlib1g-dev node-less                                                                                               \
@@ -58,7 +60,7 @@ RUN                                                                             
 
 # Virtualenv and PIP install for Odoo from 10.0 to Odoo 14.0
 RUN                                                                                                                    \
-    virtualenv --python=python3.6 /home/odoo/venvs/11.0                                                             && \
+    python3.6 -m venv /home/odoo/venvs/11.0                                                                         && \
     /home/odoo/venvs/11.0/bin/pip install --no-cache-dir --upgrade pip                                              && \
     /home/odoo/venvs/11.0/bin/pip install --no-cache-dir --upgrade "setuptools<58"                                  && \
     /home/odoo/venvs/11.0/bin/pip install --no-cache-dir                                                               \
@@ -78,7 +80,7 @@ RUN                                                                             
 
 # Virtualenv and PIP install for Odoo from 15.0 to Odoo master
 RUN                                                                                                                    \
-    virtualenv --python=python3.8 /home/odoo/venvs/15.0                                                             && \
+    python3.8 -m venv /home/odoo/venvs/15.0                                                                         && \
     /home/odoo/venvs/15.0/bin/pip install --no-cache-dir --upgrade pip                                              && \
     /home/odoo/venvs/15.0/bin/pip install --no-cache-dir                                                               \
     # Odoo dependencies
