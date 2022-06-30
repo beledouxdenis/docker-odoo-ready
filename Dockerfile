@@ -15,7 +15,7 @@ RUN apt-get update -y && apt-get upgrade -y                                     
     https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.5/wkhtmltox_0.12.5-1.focal_amd64.deb          && \
     # Fetch Google Chrome (for web tour tests)
     curl -o chrome.deb -sSL                                                                                            \
-    https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_90.0.4430.93-1_amd64.deb && \
+    https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_101.0.4951.64-1_amd64.deb && \
     # Continue install after fetching debs
     apt-get update -y && apt-get install -y --no-install-recommends                                                    \
     # Install iptables to restrict network
