@@ -18,6 +18,7 @@ run(
     [
         "docker-compose",
         "run",
+        "--rm",
         "-p",
         f"{args.http_port}:{args.http_port}",
         "-p",
