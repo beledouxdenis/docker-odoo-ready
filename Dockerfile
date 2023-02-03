@@ -84,13 +84,14 @@ RUN                                                                             
     /home/odoo/venvs/15.0/bin/pip install --no-cache-dir --upgrade pip                                              && \
     /home/odoo/venvs/15.0/bin/pip install --no-cache-dir                                                               \
     # Odoo dependencies
-    asn1crypto==1.5.1 Babel==2.6.0 chardet==3.0.4 dbfread==2.0.7 decorator==4.4.2 docutils==0.16 ebaysdk==2.1.5        \
-    feedparser==5.2.1 firebase-admin==5.0.3 freezegun==0.3.15 gevent==20.9.0 greenlet==0.4.17 html2text==2020.1.16     \
-    idna==2.8 Jinja2==2.10.1 libsass==0.18.0 lxml==4.6.1 MarkupSafe==1.1.0 num2words==0.5.6 ofxparse==0.19             \
-    passlib==1.7.2 pdfminer==20191125 phonenumbers==8.12.46 Pillow==8.1.2 polib==1.1.0 psutil==5.6.6 psycopg2==2.8.6   \
-    pydot==1.4.1 pyjwt==2.3.0 pyopenssl==19.0.0 PyPDF2==1.26.0 pyserial==3.4 python-dateutil==2.7.3 python-ldap==3.2.0 \
-    python-stdnum==1.13 pytz==2019.3 pyusb==1.0.2 qrcode==6.1 reportlab==3.5.59 requests==2.22.0 vobject==0.9.6.1      \
-    websocket-client==0.59.0 Werkzeug==0.16.1 xlrd==1.2.0 XlsxWriter==1.1.2 xlwt==1.3.* zeep==3.4.0                    \
+    asn1crypto==1.5.1 Babel==2.6.0 chardet==3.0.4 cryptography==3.4.8 dbfread==2.0.7 decorator==4.4.2 docutils==0.16   \
+    ebaysdk==2.1.5 feedparser==5.2.1 firebase-admin==5.0.3 freezegun==0.3.15 geoip2==2.9.0 gevent==20.9.0              \
+    greenlet==0.4.17 html2text==2020.1.16 idna==2.8 Jinja2==2.10.1 libsass==0.18.0 lxml==4.6.1 MarkupSafe==1.1.0       \
+    num2words==0.5.6 ofxparse==0.19 passlib==1.7.2 pdfminer==20191125 phonenumbers==8.12.46 Pillow==8.1.2 polib==1.1.0 \
+    psutil==5.6.6 psycopg2==2.8.6 pydot==1.4.1 pyjwt==2.3.0 pyopenssl==19.0.0 PyPDF2==1.26.0 pyserial==3.4             \
+    python-dateutil==2.7.3 python-ldap==3.2.0 python-stdnum==1.13 pytz==2019.3 pyusb==1.0.2 qrcode==6.1                \
+    reportlab==3.5.59 requests==2.22.0 vobject==0.9.6.1 websocket-client==0.59.0 Werkzeug==0.16.1 xlrd==1.2.0          \
+    XlsxWriter==1.1.2 xlwt==1.3.* zeep==3.4.0                                                                          \
     # Upgrade dependencies
     markdown simplejson==3.17.5                                                                                        \
     # Debugging tools
