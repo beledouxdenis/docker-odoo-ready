@@ -81,12 +81,16 @@ if __name__ == "__main__":
 
     if "--upgrade-path" not in extra_args and odoo_version >= 13.0:
         extra_args.extend(["--upgrade-path", str(Path(UPGRADE) / "migrations")])
+    if odoo_version < 11.0 and "--http-port" in extra_args:
+        extra_args[extra_args.index("--http-port")] = "--xmlrpc-port"
+    if odoo_version < 11.0 and args.database:
+        extra_args.append(f"--db-filter=^({args.database})$")
 
     venvs = sorted(Path(VENVS).glob("*"), key=lambda d: float(d.name), reverse=True)
     venv = next((venv for venv in venvs if odoo_version >= float(venv.name)), None)
     python_bin = venv / "bin" / "python"
 
-    odoo_bin_name = "odoo-bin" if odoo_version > 9.0 else "openerp-server"
+    odoo_bin_name = "odoo-bin" if odoo_version >= 10.0 else "openerp-server"
     odoo_bin = odoo_community / odoo_bin_name
 
     run([python_bin, odoo_bin, *extra_args])
