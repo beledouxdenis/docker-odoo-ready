@@ -85,6 +85,9 @@ if __name__ == "__main__":
         extra_args[extra_args.index("--http-port")] = "--xmlrpc-port"
     if odoo_version < 11.0 and args.database:
         extra_args.append(f"--db-filter=^({args.database})$")
+    if odoo_version < 8.0 and "--longpolling-port" in extra_args:
+        extra_args.pop(extra_args.index("--longpolling-port") + 1)
+        extra_args.pop(extra_args.index("--longpolling-port"))
 
     venvs = sorted(Path(VENVS).glob("*"), key=lambda d: float(d.name), reverse=True)
     venv = next((venv for venv in venvs if odoo_version >= float(venv.name)), None)
