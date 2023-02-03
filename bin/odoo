@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--branch", "-b", help="Odoo branch")
     parser.add_argument("--database", "-d", help="Database")
     parser.add_argument("--addons-path", help="Addon paths")
+    parser.add_argument("--community", action='store_true')
     args, extra_args = parser.parse_known_args()
 
     if args.database:
@@ -62,16 +63,19 @@ if __name__ == "__main__":
     addons_path = args.addons_path.split(",") if args.addons_path else []
     if not addons_path:
         addons_path.append(str(odoo_community / "addons"))
-        for path in [ENTERPRISE, THEMES]:
-            for branch in (
-                odoo_branch,
-                "-".join(odoo_branch.split("-")[0:2]) if odoo_branch.startswith("saas-") else odoo_branch.split("-")[0],
-            ):
-                p = path % {"branch": branch}
-                if Path(p).exists():
-                    addons_path.append(p)
-                    break
-    addons_path.append(LOCAL)
+        if not args.community:
+            for path in [ENTERPRISE, THEMES]:
+                for branch in (
+                    odoo_branch,
+                    "-".join(odoo_branch.split("-")[0:2]) if odoo_branch.startswith("saas-") else odoo_branch.split("-")[0],
+                ):
+                    p = path % {"branch": branch}
+                    if Path(p).exists():
+                        # In 9.0, enterprise must be put before community in addons path,
+                        # for the web from enterprise which overrides the web module from community
+                        addons_path.insert(0, p)
+                        break
+    addons_path.insert(0, LOCAL)
     addons_path = ",".join(str(path) for path in addons_path)
     extra_args.extend(["--addons-path", addons_path])
 
