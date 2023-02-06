@@ -4,6 +4,13 @@ ENV LANG C.UTF-8
 ENV TERM xterm-256color
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Set mirrors for faster APT install
+RUN sed -i -E -e 's/http:\/\/(archive|security).ubuntu.com\/ubuntu\//mirror:\/\/mirrors.ubuntu.com\/mirrors.txt/'      \
+    /etc/apt/sources.list
+# Alternative, choose a specific country (e.g. Germany)
+# RUN sed -i -E -e 's/http:\/\/(archive|security).ubuntu.com\/ubuntu\//http:\/\/de.archive.ubuntu.com\/ubuntu\//'        \
+#     /etc/apt/sources.list
+
 # APT Install
 # hadolint ignore=DL3008,DL3013
 RUN apt-get update -y && apt-get upgrade -y                                                                         && \
