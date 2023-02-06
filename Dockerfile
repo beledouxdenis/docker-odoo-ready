@@ -72,9 +72,9 @@ RUN                                                                             
     /home/odoo/venvs/11.0/bin/pip install --no-cache-dir --upgrade "setuptools<58"                                  && \
     /home/odoo/venvs/11.0/bin/pip install --no-cache-dir                                                               \
     # Odoo dependencies
-    Babel==2.6.0 chardet==3.0.4 dbfread==2.0.7 decorator==4.3.0 docutils==0.14 ebaysdk==2.1.5 feedparser==5.2.1        \
-    firebase-admin==5.0.3 freezegun==0.3.12 gevent==1.3.7 greenlet==0.4.15 html2text==2018.1.9 idna==2.6               \
-    Jinja2==2.10.1 libsass==0.17.0 lxml==4.3.2 Mako==1.0.7 MarkupSafe==1.1.0 mock==2.0.0 num2words==0.5.6              \
+    Babel==2.6.0 chardet==3.0.4 cryptography==2.6.1 dbfread==2.0.7 decorator==4.3.0 docutils==0.14 ebaysdk==2.1.5      \
+    feedparser==5.2.1 firebase-admin==5.0.3 freezegun==0.3.12 gevent==1.3.7 greenlet==0.4.15 html2text==2018.1.9       \
+    idna==2.6 Jinja2==2.10.1 libsass==0.17.0 lxml==4.3.2 Mako==1.0.7 MarkupSafe==1.1.0 mock==2.0.0 num2words==0.5.6    \
     ofxparse==0.19 passlib==1.7.1 pdfminer==20191125 phonenumbers==8.9.10 Pillow==5.4.1 polib==1.1.0 psutil==5.6.6     \
     psycopg2==2.8.3 pydot==1.4.1 pyOpenSSL==19.0.0 pyparsing==2.2.0 PyPDF2==1.26.0 pyserial==3.4                       \
     python-dateutil==2.7.3 python-ldap==3.1.0 python-stdnum==1.8 pytz==2019.1 pyusb==1.0.2 PyYAML==3.13 qrcode==6.1    \
