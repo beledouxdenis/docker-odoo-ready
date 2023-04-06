@@ -1,18 +1,33 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import re
+from pathlib import Path
 from subprocess import run
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
 parser.add_argument("--longpolling-port", help="Longpolling Port")
 
 args, extra_args = parser.parse_known_args()
+extra_args.extend(["--branch", args.branch])
 
 if not args.longpolling_port:
     args.longpolling_port = str(int(args.http_port) + 3)
 
 extra_args.extend(["--http-port", args.http_port, "--longpolling-port", args.longpolling_port])
+
+odoo_version = float(".".join(re.findall(r"\d+", args.branch)[0:2]))
+docker_file = next(
+    path.split(".")[0]
+    for path in sorted(
+        (path.name for path in Path(__file__).resolve().parent.glob("*.dockerfile")),
+        key=lambda k: float(k.split("-to-")[0].replace("-", ".")),
+        reverse=True,
+    )
+    if odoo_version >= float(path.split("-to-")[0].replace("-", "."))
+)
 
 run(
     [
@@ -27,6 +42,6 @@ run(
         "odoo",
     ]
     + extra_args,
-    env=dict(os.environ, USER_ID=str(os.getuid())),
+    env=dict(os.environ, USER_ID=str(os.getuid()), DOCKERFILE=docker_file),
     cwd=os.path.dirname(os.path.realpath(__file__)),
 )

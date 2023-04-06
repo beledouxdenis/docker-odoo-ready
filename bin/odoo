@@ -5,9 +5,6 @@ import re
 from pathlib import Path
 from subprocess import run
 
-import psycopg2
-
-VENVS = "/home/odoo/venvs"
 COMMUNITY = "/home/odoo/src/odoo/%(branch)s"
 ENTERPRISE = "/home/odoo/src/enterprise/%(branch)s"
 THEMES = "/home/odoo/src/design-themes/%(branch)s"
@@ -16,10 +13,10 @@ LOCAL = "/home/odoo/src/docker-odoo-ready/addons"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--branch", "-b", help="Odoo branch")
+    parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
     parser.add_argument("--database", "-d", help="Database")
     parser.add_argument("--addons-path", help="Addon paths")
-    parser.add_argument("--community", action='store_true')
+    parser.add_argument("--community", action="store_true")
     args, extra_args = parser.parse_known_args()
 
     if args.database:
@@ -32,29 +29,6 @@ if __name__ == "__main__":
         odoo_release = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(odoo_release)
         odoo_version = odoo_release.version
-    elif args.database:
-        try:
-            with psycopg2.connect(database=args.database) as conn:
-                with conn.cursor() as cr:
-                    try:
-                        cr.execute("SELECT latest_version FROM ir_module_module WHERE name = 'base'")
-                    except psycopg2.errors.UndefinedTable:
-                        parser.error(
-                            "The database %s is not initialized. The odoo version cannot be guessed.", args.database
-                        )
-                    (odoo_version,) = cr.fetchone()
-                    odoo_branch = odoo_version.replace("~", "-")
-                    if "saas" in odoo_branch:
-                        if odoo_branch.startswith("saas"):
-                            (odoo_branch,) = re.findall(r"saas-\d+\.\d+", odoo_branch)
-                        else:
-                            (odoo_branch,) = re.findall(r"saas-\d+", odoo_branch)
-                    else:
-                        odoo_branch = re.findall(r"\d+.\d+", odoo_branch)[0]
-        except psycopg2.OperationalError:
-            parser.error("Cannot connect to the database %s", args.database)
-    else:
-        parser.error("You must provide at least --branch or --database")
 
     odoo_version = float(".".join(re.findall(r"\d+", odoo_version)[0:2]))
 
@@ -67,7 +41,9 @@ if __name__ == "__main__":
             for path in [ENTERPRISE, THEMES]:
                 for branch in (
                     odoo_branch,
-                    "-".join(odoo_branch.split("-")[0:2]) if odoo_branch.startswith("saas-") else odoo_branch.split("-")[0],
+                    "-".join(odoo_branch.split("-")[0:2])
+                    if odoo_branch.startswith("saas-")
+                    else odoo_branch.split("-")[0],
                 ):
                     p = path % {"branch": branch}
                     if Path(p).exists():
@@ -89,11 +65,7 @@ if __name__ == "__main__":
         extra_args.pop(extra_args.index("--longpolling-port") + 1)
         extra_args.pop(extra_args.index("--longpolling-port"))
 
-    venvs = sorted(Path(VENVS).glob("*"), key=lambda d: float(d.name), reverse=True)
-    venv = next((venv for venv in venvs if odoo_version >= float(venv.name)), None)
-    python_bin = venv / "bin" / "python"
-
     odoo_bin_name = "odoo-bin" if odoo_version >= 10.0 else "openerp-server"
     odoo_bin = odoo_community / odoo_bin_name
 
-    run([python_bin, odoo_bin, *extra_args])
+    run([odoo_bin, *extra_args])
