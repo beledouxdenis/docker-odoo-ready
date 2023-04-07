@@ -8,15 +8,15 @@ from subprocess import run
 parser = argparse.ArgumentParser()
 parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
-parser.add_argument("--longpolling-port", help="Longpolling Port")
+parser.add_argument("--gevent-port", help="Gevent Port")
 
 args, extra_args = parser.parse_known_args()
 extra_args.extend(["--branch", args.branch])
 
-if not args.longpolling_port:
-    args.longpolling_port = str(int(args.http_port) + 3)
+if not args.gevent_port:
+    args.gevent_port = str(int(args.http_port) + 3)
 
-extra_args.extend(["--http-port", args.http_port, "--longpolling-port", args.longpolling_port])
+extra_args.extend(["--http-port", args.http_port, "--gevent-port", args.gevent_port])
 
 odoo_version = float(".".join(re.findall(r"\d+", args.branch)[0:2]))
 docker_file = next(
@@ -37,7 +37,7 @@ run(
         "-p",
         f"{args.http_port}:{args.http_port}",
         "-p",
-        f"{args.longpolling_port}:{args.longpolling_port}",
+        f"{args.gevent_port}:{args.gevent_port}",
         "odoo",
         "odoo",
     ]

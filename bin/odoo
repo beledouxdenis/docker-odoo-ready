@@ -59,11 +59,13 @@ if __name__ == "__main__":
         extra_args.extend(["--upgrade-path", str(Path(UPGRADE) / "migrations")])
     if odoo_version < 11.0 and "--http-port" in extra_args:
         extra_args[extra_args.index("--http-port")] = "--xmlrpc-port"
-    if odoo_version < 11.0 and args.database:
-        extra_args.append(f"--db-filter=^({args.database})$")
+    if odoo_version < 16.0 and "--gevent-port" in extra_args:
+        extra_args[extra_args.index("--gevent-port")] = "--longpolling-port"
     if odoo_version < 8.0 and "--longpolling-port" in extra_args:
         extra_args.pop(extra_args.index("--longpolling-port") + 1)
         extra_args.pop(extra_args.index("--longpolling-port"))
+    if odoo_version < 11.0 and args.database:
+        extra_args.append(f"--db-filter=^({args.database})$")
 
     odoo_bin_name = "odoo-bin" if odoo_version >= 10.0 else "openerp-server"
     odoo_bin = odoo_community / odoo_bin_name
