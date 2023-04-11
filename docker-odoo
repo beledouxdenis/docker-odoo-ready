@@ -18,7 +18,8 @@ if not args.gevent_port:
 
 extra_args.extend(["--http-port", args.http_port, "--gevent-port", args.gevent_port])
 
-odoo_version = float(".".join(re.findall(r"\d+", args.branch)[0:2]))
+odoo_version = ".".join(re.findall(r"\d+", args.branch)[0:2])
+odoo_version = float(odoo_version) if odoo_version else "master"
 docker_file = next(
     path.split(".")[0]
     for path in sorted(
@@ -26,7 +27,7 @@ docker_file = next(
         key=lambda k: float(k.split("-to-")[0].replace("-", ".")),
         reverse=True,
     )
-    if odoo_version >= float(path.split("-to-")[0].replace("-", "."))
+    if odoo_version == "master" or odoo_version >= float(path.split("-to-")[0].replace("-", "."))
 )
 
 run(
