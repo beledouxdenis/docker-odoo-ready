@@ -30,19 +30,25 @@ docker_file = next(
     if odoo_version == "master" or odoo_version >= float(path.split("-to-")[0].replace("-", "."))
 )
 
-run(
-    [
-        "docker-compose",
-        "run",
-        "--rm",
+command = [
+    "docker-compose",
+    "run",
+    "--rm",
+]
+if not extra_args or extra_args[0] != "shell":
+    command += [
         "-p",
         f"{args.http_port}:{args.http_port}",
         "-p",
         f"{args.gevent_port}:{args.gevent_port}",
-        "odoo",
-        "odoo",
     ]
-    + extra_args,
+command += [
+    "odoo",
+    "odoo",
+]
+
+run(
+    command + extra_args,
     env=dict(os.environ, USER_ID=str(os.getuid()), DOCKERFILE=docker_file),
     cwd=os.path.dirname(os.path.realpath(__file__)),
 )
