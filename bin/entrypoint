@@ -42,7 +42,7 @@ def restrict_network(domains):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "--domain-whitelist",
         help="Comma-separated domains. Restrict internet to HTTP connections to these domains",

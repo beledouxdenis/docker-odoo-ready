@@ -5,7 +5,7 @@ import re
 from pathlib import Path
 from subprocess import run
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
 parser.add_argument("--gevent-port", help="Gevent Port")

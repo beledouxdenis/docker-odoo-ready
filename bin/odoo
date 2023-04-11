@@ -12,7 +12,7 @@ UPGRADE = "/home/odoo/src/upgrade"
 LOCAL = "/home/odoo/src/docker-odoo-ready/addons"
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
     parser.add_argument("--database", "-d", help="Database")
     parser.add_argument("--addons-path", help="Addon paths")
