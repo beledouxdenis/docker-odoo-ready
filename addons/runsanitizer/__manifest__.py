@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 {
     "name": "runsanitizer",
     "summary": "Clean a client database to be able to run it in a docker container.",
