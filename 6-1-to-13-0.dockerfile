@@ -34,7 +34,7 @@ RUN apt-get update -y \
     python3-openid python3-openssl python3-passlib python3-phonenumbers python3-pil python3-pip python3-polib \
     python3-psutil python3-psycopg2 python3-pydot python3-pyldap python3-pyparsing python3-pypdf2 python3-reportlab \
     python3-requests python3-setproctitle python3-simplejson python3-slugify python3-tz python3-unittest2 \
-    python3-vatnumber python3-vobject python3-werkzeug python3-xlrd python3-xlsxwriter python3-yaml \
+    python3-vatnumber python3-vobject python3-websocket python3-werkzeug python3-xlrd python3-xlsxwriter python3-yaml \
     # Install lessc
     node-less \
     # Install wkhtmltopf
