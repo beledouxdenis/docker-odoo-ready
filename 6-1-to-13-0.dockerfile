@@ -14,7 +14,7 @@ RUN apt-get update -y \
     && echo 'deb [signed-by=/usr/share/keyrings/odoo-nightly.gpg] http://nightly.odoo.com/deb/bionic ./' \
     > /etc/apt/sources.list.d/odoo-nightly.list \
     # Fetch Google Chrome (for web tour tests)
-    && wget -qO chrome.deb \
+    && wget -q --show-progres --progress=bar:force:noscroll -O chrome.deb \
     https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_101.0.4951.64-1_amd64.deb \
     # Continue install after fetching debs
     && apt-get update -y \
