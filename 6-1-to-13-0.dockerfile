@@ -9,9 +9,10 @@ RUN apt-get update -y \
     # Install required package to add an apt repository key
     && apt-get install -y --no-install-recommends ca-certificates gnupg2 wget \
     # Add the Odoo nightly repository key
-    && wget -qO - https://nightly.odoo.com/odoo.key | apt-key add - \
+    && wget -q -O - https://nightly.odoo.com/odoo.key | gpg --dearmor > /usr/share/keyrings/odoo-nightly.gpg \
     # Add the Odoo nightly repository
-    && echo 'deb http://nightly.odoo.com/deb/bionic ./' > /etc/apt/sources.list.d/odoo.list \
+    && echo 'deb [signed-by=/usr/share/keyrings/odoo-nightly.gpg] http://nightly.odoo.com/deb/bionic ./' \
+    > /etc/apt/sources.list.d/odoo-nightly.list \
     # Fetch Google Chrome (for web tour tests)
     && wget -qO chrome.deb \
     https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_101.0.4951.64-1_amd64.deb \
