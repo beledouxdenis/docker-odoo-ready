@@ -70,4 +70,4 @@ if __name__ == "__main__":
     odoo_bin_name = "odoo-bin" if odoo_version >= 10.0 else "openerp-server"
     odoo_bin = odoo_community / odoo_bin_name
 
-    run([odoo_bin, *extra_args])
+    run(["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", odoo_bin, *extra_args])
