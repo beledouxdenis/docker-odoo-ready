@@ -67,7 +67,8 @@ if __name__ == "__main__":
     if odoo_version < 11.0 and args.database:
         extra_args.append(f"--db-filter=^({args.database})$")
 
+    python_bin = "python3" if odoo_version >= 11.0 else "python2"
     odoo_bin_name = "odoo-bin" if odoo_version >= 10.0 else "openerp-server"
     odoo_bin = odoo_community / odoo_bin_name
 
-    run(["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", odoo_bin, *extra_args])
+    run([python_bin, "-m", "debugpy", "--listen", "0.0.0.0:5678", odoo_bin, *extra_args])
