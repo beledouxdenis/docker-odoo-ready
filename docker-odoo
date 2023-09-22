@@ -16,6 +16,8 @@ extra_args.extend(["--branch", args.branch])
 if not args.gevent_port:
     args.gevent_port = str(int(args.http_port) + 3)
 
+debugport = 5678 + (int(args.http_port) - 8069)
+
 extra_args.extend(["--http-port", args.http_port, "--gevent-port", args.gevent_port])
 
 odoo_version = ".".join(re.findall(r"\d+", args.branch)[0:2])
@@ -35,7 +37,7 @@ command = [
     "run",
     "--rm",
     "-p",
-    "5678:5678",
+    f"{debugport}:5678",
 ]
 if not extra_args or extra_args[0] != "shell":
     command += [

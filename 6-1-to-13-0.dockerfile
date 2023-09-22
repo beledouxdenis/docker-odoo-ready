@@ -40,6 +40,8 @@ RUN apt-get update -y \
     python-pip python3-pip \
     # Install lessc
     node-less \
+    # Install npm, to install node dependencies not packaged by Ubuntu
+    npm \
     # Install wkhtmltopf
     wkhtmltox \
     # Install fonts
@@ -56,10 +58,12 @@ RUN apt-get update -y \
     debugpy \
     # Upgrade PIP3 and setuptools
     && pip3 install --upgrade pip "setuptools<58" \
-    # Install PIP3 debug tools
-    debugpy \
     # Install PIP3 depdendencies for Odoo
     && pip3 install --no-cache-dir \
     ebaysdk==2.1.5 firebase-admin==2.17.0 num2words==0.5.10 suds-jurko==0.6 xlwt==1.3.* zeep==3.2.0 \
+    # Install PIP3 debug tools
+    debugpy \
+    # Install node dependencies for Odoo
+    && npm install -g rtlcss@2.4.0 \
     # Cleanup
     && rm -rf ./chrome.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*

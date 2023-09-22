@@ -54,6 +54,6 @@ RUN apt-get update -y \
     # Install PIP debug tools
     debugpy \
     # Install node dependencies for Odoo
-    && npm install -g rtlcss@3.4.0 \
+    && npm install -g rtlcss@2.5.0 \
     # Cleanup
     && rm -rf ./chrome.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
