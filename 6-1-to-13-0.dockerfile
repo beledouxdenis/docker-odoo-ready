@@ -15,7 +15,7 @@ RUN apt-get update -y \
     > /etc/apt/sources.list.d/odoo-nightly.list \
     # Fetch Google Chrome (for web tour tests)
     && wget -q --show-progres --progress=bar:force:noscroll -O chrome.deb \
-    https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_101.0.4951.64-1_amd64.deb \
+    https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_114.0.5735.133-1_amd64.deb \
     # Continue install after fetching debs
     && apt-get update -y \
     && apt-get install -y --no-install-recommends \
