@@ -8,6 +8,7 @@ from subprocess import run
 COMMUNITY = "/home/odoo/src/odoo/%(branch)s"
 ENTERPRISE = "/home/odoo/src/enterprise/%(branch)s"
 THEMES = "/home/odoo/src/design-themes/%(branch)s"
+UPGRADE_UTIL = "/home/odoo/src/upgrade-util"
 UPGRADE = "/home/odoo/src/upgrade"
 LOCAL = "/home/odoo/src/docker-odoo-ready/addons"
 
@@ -56,7 +57,10 @@ if __name__ == "__main__":
     extra_args.extend(["--addons-path", addons_path])
 
     if "--upgrade-path" not in extra_args and odoo_version >= 13.0:
-        extra_args.extend(["--upgrade-path", str(Path(UPGRADE) / "migrations")])
+        extra_args.extend(["--upgrade-path", ",".join([
+            str(Path(UPGRADE_UTIL) / "src"),
+            str(Path(UPGRADE) / "migrations")
+        ])])
     if odoo_version < 11.0 and "--http-port" in extra_args:
         extra_args[extra_args.index("--http-port")] = "--xmlrpc-port"
     if odoo_version < 16.0 and "--gevent-port" in extra_args:
