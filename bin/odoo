@@ -10,7 +10,6 @@ ENTERPRISE = "/home/odoo/src/enterprise/%(branch)s"
 THEMES = "/home/odoo/src/design-themes/%(branch)s"
 UPGRADE_UTIL = "/home/odoo/src/upgrade-util"
 UPGRADE = "/home/odoo/src/upgrade"
-LOCAL = "/home/odoo/src/docker-odoo-ready/addons"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
@@ -52,7 +51,6 @@ if __name__ == "__main__":
                         # for the web from enterprise which overrides the web module from community
                         addons_path.insert(0, p)
                         break
-    addons_path.insert(0, LOCAL)
     addons_path = ",".join(str(path) for path in addons_path)
     extra_args.extend(["--addons-path", addons_path])
 

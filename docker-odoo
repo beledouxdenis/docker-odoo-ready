@@ -39,6 +39,13 @@ command = [
     "-p",
     f"{debugport}:5678",
 ]
+
+for user_dir in [".local/share/Odoo", ".ipython", ".config/pudb"]:
+    # local_dir = f"/tmp/{user_dir}"
+    local_dir = os.path.expanduser(f"~/{user_dir}")
+    os.makedirs(local_dir, exist_ok=True)
+    command.extend(["-v", local_dir + ":" + os.path.expanduser(f"~/{user_dir}")])
+
 if not extra_args or extra_args[0] != "shell":
     command += [
         "-p",

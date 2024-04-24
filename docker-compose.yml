@@ -8,12 +8,11 @@ services:
     volumes:
       - "./bin/entrypoint:/usr/local/bin/entrypoint:ro"
       - "./bin/odoo:/usr/local/bin/odoo:ro"
-      - "~/src:/home/odoo/src:ro"
+      - "~/src/odoo:/home/odoo/src/odoo:ro"
+      - "~/src/enterprise:/home/odoo/src/enterprise:ro"
+      - "~/src/upgrade:/home/odoo/src/upgrade:ro"
+      - "~/src/upgrade-util:/home/odoo/src/upgrade-util:ro"
       - "/var/run/postgresql:/var/run/postgresql:ro"
-      - "~:/home/${USER}:ro"
-      - "~/.local/share/Odoo:/home/${USER}/.local/share/Odoo"
-      - "~/.ipython:/home/${USER}/.ipython"
-      - "~/.config/pudb:/home/${USER}/.config/pudb"
     entrypoint: entrypoint
     command: odoo
     environment:
