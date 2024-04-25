@@ -28,9 +28,10 @@ RUN apt-get update -y \
     python3-lxml python3-mako python3-markdown python3-matplotlib python3-mock python3-num2words python3-ofxparse \
     python3-openid python3-openssl python3-passlib python3-pdfminer python3-phonenumbers python3-pil python3-polib \
     python3-psutil python3-psycogreen python3-psycopg2 python3-pydot python3-pyldap python3-pyparsing python3-pypdf2 \
-    python3-qrcode python3-reportlab python3-requests python3-rjsmin python3-setproctitle python3-simplejson \
-    python3-slugify python3-stdnum python3-suds python3-tz python3-unittest2 python3-vobject python3-websocket \
-    python3-werkzeug python3-xlrd python3-xlsxwriter python3-xlwt python3-xmlsec python3-yaml python3-zeep \
+    python3-qrcode python3-renderpm python3-reportlab python3-requests python3-rjsmin python3-setproctitle \
+    python3-simplejson python3-slugify python3-stdnum python3-suds python3-tz python3-unittest2 python3-vobject \
+    python3-websocket python3-werkzeug python3-xlrd python3-xlsxwriter python3-xlwt python3-xmlsec python3-yaml \
+    python3-zeep \
     # Set python3 by default
     python-is-python3 \
     # Install pip, to install python dependencies not packaged by Ubuntu
