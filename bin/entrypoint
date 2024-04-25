@@ -56,10 +56,6 @@ if __name__ == "__main__":
     login = os.environ["USER"]
     uid = int(os.environ["UID"])
 
-    user = run(["id", "-nu", "1000"], capture_output=True).stdout.strip().decode()
-    if user:
-        run(["usermod", user, "-l", login, "-s", "/bin/bash"])
-    else:
-        run(["useradd", login, "-s", "/bin/bash", "-u", str(uid)])
+    run(["useradd", login, "-s", "/bin/bash", "-u", str(uid)])
 
     run(extra_args, preexec_fn=demote(uid, uid), env=dict(os.environ, HOME=f"/home/{login}"))
