@@ -8,6 +8,7 @@ IMAGES = [("14.0", "jammy"), ("6.1", "bionic")]
 
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
+parser.add_argument("--image", help="Docker image")
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
 parser.add_argument("--gevent-port", help="Gevent Port")
 
@@ -22,7 +23,7 @@ debugport = 5678 + (int(args.http_port) - 8069)
 extra_args.extend(["--http-port", args.http_port, "--gevent-port", args.gevent_port])
 
 odoo_version = float(".".join(re.findall(r"\d+", args.branch)[0:2]) or "inf")
-docker_file = next(image for version, image in IMAGES if odoo_version >= float(version))
+docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= float(version))
 
 run(["podman-compose", "build", "odoo"], env={'DOCKERFILE': docker_file})
 
