@@ -1,8 +1,6 @@
 FROM ubuntu:bionic
 
-ENV LANG C.UTF-8
-ENV TERM xterm-256color
-ARG DEBIAN_FRONTEND=noninteractive
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 TERM=xterm-256color
 
 RUN apt-get update -y \
     && apt-get upgrade -y \

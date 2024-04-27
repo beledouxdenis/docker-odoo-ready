@@ -1,10 +1,6 @@
 FROM ubuntu:jammy
 
-ENV LANG C.UTF-8
-ENV TERM xterm-256color
-ARG DEBIAN_FRONTEND=noninteractive
-ARG NODE_ENV=production
-ENV NODE_ENV $NODE_ENV
+ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 NODE_ENV=production TERM=xterm-256color
 
 RUN apt-get update -y \
     && apt-get upgrade -y \
