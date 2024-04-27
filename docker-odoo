@@ -20,7 +20,7 @@ debug_port = 5678 + (int(args.http_port) - 8069)
 odoo_version = float(".".join(re.findall(r"\d+", args.branch)[0:2]) or "inf")
 docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
 
-run(["podman-compose", "build", "odoo"], env={'DOCKERFILE': docker_file})
+run(["podman-compose", "build", "odoo"], env={"DOCKERFILE": docker_file})
 
 command = ["podman-compose", "run", "--rm", "-p", f"{debug_port}:5678"]
 

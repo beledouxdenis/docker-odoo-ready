@@ -42,9 +42,11 @@ if __name__ == "__main__":
             for path in [ENTERPRISE, THEMES]:
                 for branch in (
                     odoo_branch,
-                    "-".join(odoo_branch.split("-")[0:2])
-                    if odoo_branch.startswith("saas-")
-                    else odoo_branch.split("-")[0],
+                    (
+                        "-".join(odoo_branch.split("-")[0:2])
+                        if odoo_branch.startswith("saas-")
+                        else odoo_branch.split("-")[0]
+                    ),
                 ):
                     p = path / branch
                     if p.exists():
@@ -56,10 +58,7 @@ if __name__ == "__main__":
     extra_args.extend(["--addons-path", addons_path])
 
     if "--upgrade-path" not in extra_args and odoo_version >= 13.0:
-        extra_args.extend(["--upgrade-path", ",".join([
-            str(UPGRADE_UTIL / "src"),
-            str(UPGRADE / "migrations")
-        ])])
+        extra_args.extend(["--upgrade-path", ",".join([str(UPGRADE_UTIL / "src"), str(UPGRADE / "migrations")])])
     if odoo_version < 11.0 and "--http-port" in extra_args:
         extra_args[extra_args.index("--http-port")] = "--xmlrpc-port"
     if odoo_version < 16.0 and "--gevent-port" in extra_args:
