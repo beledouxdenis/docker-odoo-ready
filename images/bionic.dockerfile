@@ -57,7 +57,7 @@ RUN apt-get update -y \
     # Install PIP2 debug tools
     debugpy \
     # Upgrade PIP3 and setuptools
-    && pip3 install --upgrade pip "setuptools<58" \
+    && pip3 install --no-cache-dir --upgrade pip "setuptools<58" \
     # Install PIP3 depdendencies for Odoo
     && pip3 install --no-cache-dir \
     ebaysdk==2.1.5 firebase-admin==2.17.0 num2words==0.5.10 suds-jurko==0.6 xlwt==1.3.* zeep==3.2.0 \
