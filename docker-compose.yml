@@ -7,16 +7,16 @@ services:
     image: "localhost/odoo:${DOCKERFILE}"
     userns_mode: "keep-id"  # To keep same UID/GID as host, mainly for the postgresql sockect connection
     volumes:
-      - "./bin/entrypoint:/usr/local/bin/entrypoint:ro"
-      - "./bin/odoo:/usr/local/bin/odoo:ro"
-      - "~/src/odoo:/home/odoo/src/odoo:ro"
-      - "~/src/enterprise:/home/odoo/src/enterprise:ro"
-      - "~/src/upgrade:/home/odoo/src/upgrade:ro"
-      - "~/src/upgrade-util:/home/odoo/src/upgrade-util:ro"
-      - "/var/run/postgresql:/var/run/postgresql:ro"
-      - "~/.local/share/Odoo:/home/odoo/.local/share/Odoo"
-      - "~/.ipython:/home/odoo/.ipython"
-      - "~/.config/pudb:/home/odoo/.config/pudb"
+      - ./bin/entrypoint:/usr/local/bin/entrypoint:ro
+      - ./bin/odoo:/usr/local/bin/odoo:ro
+      - ~/src/odoo:/home/odoo/src/odoo:ro
+      - ~/src/enterprise:/home/odoo/src/enterprise:ro
+      - ~/src/upgrade:/home/odoo/src/upgrade:ro
+      - ~/src/upgrade-util:/home/odoo/src/upgrade-util:ro
+      - /var/run/postgresql:/var/run/postgresql:ro
+      - ~/.local/share/Odoo:/home/odoo/.local/share/Odoo
+      - ~/.ipython:/home/odoo/.ipython
+      - ~/.config/pudb:/home/odoo/.config/pudb
     entrypoint: entrypoint
     cap_add:
       - NET_ADMIN
