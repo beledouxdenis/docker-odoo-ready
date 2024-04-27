@@ -10,31 +10,26 @@ parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
 parser.add_argument("--image", help="Docker image")
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
-parser.add_argument("--gevent-port", help="Gevent Port")
 
 args, extra_args = parser.parse_known_args()
 extra_args.extend(["--branch", args.branch])
 
-if not args.gevent_port:
-    args.gevent_port = str(int(args.http_port) + 3)
-
-debugport = 5678 + (int(args.http_port) - 8069)
-
-extra_args.extend(["--http-port", args.http_port, "--gevent-port", args.gevent_port])
+longpolling_port = str(int(args.http_port) + 3)
+debug_port = 5678 + (int(args.http_port) - 8069)
 
 odoo_version = float(".".join(re.findall(r"\d+", args.branch)[0:2]) or "inf")
 docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
 
 run(["podman-compose", "build", "odoo"], env={'DOCKERFILE': docker_file})
 
-command = ["podman-compose", "run", "--rm", "-p", f"{debugport}:5678"]
+command = ["podman-compose", "run", "--rm", "-p", f"{debug_port}:5678"]
 
 if not extra_args or extra_args[0] != "shell":
     command += [
         "-p",
-        f"{args.http_port}:{args.http_port}",
+        f"{args.http_port}:8069",
         "-p",
-        f"{args.gevent_port}:{args.gevent_port}",
+        f"{longpolling_port}:8072",
     ]
 command += [
     "odoo",
