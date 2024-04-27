@@ -49,7 +49,8 @@ RUN apt-get update -y \
     less ipython3 python3-pudb \
     # Install iptables to restrict network
     iptables \
-    # Use the iptables-nft alternative (instead of legacy xtable)
+    # Use the iptables-nft instead of legacy xtable. Otherwise, when using iptables in the container, leads to
+    # Fatal: can't open lock file /run/xtables.lock: Permission denied
     && update-alternatives --set iptables /usr/sbin/iptables-nft \
     # Install PIP dependencies for Odoo
     && pip install --no-cache-dir ebaysdk firebase-admin==2.17.0 inotify pdf417gen \

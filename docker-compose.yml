@@ -20,4 +20,4 @@ services:
     entrypoint: entrypoint
     cap_add:
       - NET_ADMIN
-      - NET_RAW
+      - NET_RAW  # Required only for Ubuntu Bionic. From focal it's no longer required.
