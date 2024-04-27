@@ -5,11 +5,12 @@ import re
 from pathlib import Path
 from subprocess import run
 
-COMMUNITY = "/home/odoo/src/odoo/%(branch)s"
-ENTERPRISE = "/home/odoo/src/enterprise/%(branch)s"
-THEMES = "/home/odoo/src/design-themes/%(branch)s"
-UPGRADE_UTIL = "/home/odoo/src/upgrade-util"
-UPGRADE = "/home/odoo/src/upgrade"
+SRC = Path.home() / "src"
+COMMUNITY = SRC / "odoo"
+ENTERPRISE = SRC / "enterprise"
+THEMES = SRC / "design-themes"
+UPGRADE_UTIL = SRC / "upgrade-util"
+UPGRADE = SRC / "upgrade"
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(add_help=False)
@@ -24,7 +25,7 @@ if __name__ == "__main__":
 
     if args.branch:
         odoo_branch = args.branch
-        odoo_release_file = next(Path(COMMUNITY % {"branch": odoo_branch}).glob("*/release.py"))
+        odoo_release_file = next((COMMUNITY / odoo_branch).glob("*/release.py"))
         spec = importlib.util.spec_from_file_location("odoo_release", odoo_release_file)
         odoo_release = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(odoo_release)
@@ -32,7 +33,7 @@ if __name__ == "__main__":
 
     odoo_version = float(".".join(re.findall(r"\d+", odoo_version)[0:2]))
 
-    odoo_community = Path(COMMUNITY % {"branch": odoo_branch})
+    odoo_community = COMMUNITY / odoo_branch
 
     addons_path = args.addons_path.split(",") if args.addons_path else []
     if not addons_path:
@@ -45,19 +46,19 @@ if __name__ == "__main__":
                     if odoo_branch.startswith("saas-")
                     else odoo_branch.split("-")[0],
                 ):
-                    p = path % {"branch": branch}
-                    if Path(p).exists():
+                    p = path / branch
+                    if p.exists():
                         # In 9.0, enterprise must be put before community in addons path,
                         # for the web from enterprise which overrides the web module from community
-                        addons_path.insert(0, p)
+                        addons_path.insert(0, str(p))
                         break
     addons_path = ",".join(str(path) for path in addons_path)
     extra_args.extend(["--addons-path", addons_path])
 
     if "--upgrade-path" not in extra_args and odoo_version >= 13.0:
         extra_args.extend(["--upgrade-path", ",".join([
-            str(Path(UPGRADE_UTIL) / "src"),
-            str(Path(UPGRADE) / "migrations")
+            str(UPGRADE_UTIL / "src"),
+            str(UPGRADE / "migrations")
         ])])
     if odoo_version < 11.0 and "--http-port" in extra_args:
         extra_args[extra_args.index("--http-port")] = "--xmlrpc-port"

@@ -3,8 +3,9 @@ services:
   odoo:
     build:
       context: .
-      dockerfile: "${DOCKERFILE}.dockerfile"
-    image: "odoo-ready:${DOCKERFILE}"
+      dockerfile: "images/${DOCKERFILE}.dockerfile"
+    image: "localhost/odoo:${DOCKERFILE}"
+    userns_mode: "keep-id"  # To keep same UID/GID as host, mainly for the postgresql sockect connection
     volumes:
       - "./bin/entrypoint:/usr/local/bin/entrypoint:ro"
       - "./bin/odoo:/usr/local/bin/odoo:ro"
@@ -13,11 +14,10 @@ services:
       - "~/src/upgrade:/home/odoo/src/upgrade:ro"
       - "~/src/upgrade-util:/home/odoo/src/upgrade-util:ro"
       - "/var/run/postgresql:/var/run/postgresql:ro"
+      - "~/.local/share/Odoo:/home/odoo/.local/share/Odoo"
+      - "~/.ipython:/home/odoo/.ipython"
+      - "~/.config/pudb:/home/odoo/.config/pudb"
     entrypoint: entrypoint
-    command: odoo
-    environment:
-      USER: ${USER}
-      UID: ${USER_ID}
     cap_add:
       - NET_ADMIN
       - NET_RAW

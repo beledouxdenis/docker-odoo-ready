@@ -4,14 +4,6 @@ import os
 from subprocess import run
 
 
-def demote(uid, gid):
-    def set_ids():
-        os.setgid(gid)
-        os.setuid(uid)
-
-    return set_ids
-
-
 def restrict_network(domains):
     for rule in [
         # Allow DNS
@@ -53,9 +45,4 @@ if __name__ == "__main__":
     if args.domain_whitelist:
         restrict_network(args.domain_whitelist.split(","))
 
-    login = os.environ["USER"]
-    uid = int(os.environ["UID"])
-
-    run(["useradd", login, "-s", "/bin/bash", "-u", str(uid)])
-
-    run(extra_args, preexec_fn=demote(uid, uid), env=dict(os.environ, HOME=f"/home/{login}"))
+    run(extra_args, env=dict(os.environ, HOME="/home/odoo"))
