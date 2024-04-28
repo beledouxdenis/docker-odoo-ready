@@ -46,4 +46,7 @@ ln -s $src/docker-odoo-ready/docker-odoo ~/bin/odoo
 ### Run Odoo
 ```sh
 odoo -b 17.0 -d 17.0
+odoo -b 17.0 -d 17.0 --image focal
+odoo -b 17.0 -d 17.0 --domain-whitelist=www.google.com,google.com
+odoo shell -b 17.0 -d 17.0
 ```
