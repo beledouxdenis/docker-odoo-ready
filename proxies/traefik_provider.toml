@@ -1,0 +1,59 @@
+[http]
+  [http.routers]
+    [http.routers.http]
+      rule = "Host(`localhost`)"
+      entryPoints = ["web"]
+      service = "main"
+
+    [http.routers.https]
+      rule = "Host(`localhost`)"
+      entryPoints = ["websecure"]
+      service = "main"
+      [http.routers.https.tls]
+
+    [http.routers.longpolling_http]
+      rule = "Host(`localhost`) && PathPrefix(`/longpolling`)"
+      entryPoints = ["web"]
+      service = "longpolling"
+
+    [http.routers.longpolling_https]
+      rule = "Host(`localhost`) && PathPrefix(`/longpolling`)"
+      entryPoints = ["websecure"]
+      service = "longpolling"
+      [http.routers.longpolling_https.tls]
+
+    [http.routers.websocket_http]
+      rule = "Host(`localhost`) && PathPrefix(`/websocket`)"
+      entryPoints = ["web"]
+      service = "websocket"
+      middlewares = ["websocket-headers"]
+
+    [http.routers.websocket_https]
+      rule = "Host(`localhost`) && PathPrefix(`/websocket`)"
+      entryPoints = ["websecure"]
+      service = "websocket"
+      middlewares = ["websocket-headers"]
+      [http.routers.websocket_https.tls]
+
+  [http.services]
+
+    [http.services.main.loadBalancer]
+      [[http.services.main.loadBalancer.servers]]
+        url = "http://host.containers.internal:8069"
+
+    [http.services.longpolling.loadBalancer]
+      [[http.services.longpolling.loadBalancer.servers]]
+        url = "http://host.containers.internal:8072"
+
+    [http.services.websocket.loadBalancer]
+      [[http.services.websocket.loadBalancer.servers]]
+        url = "http://host.containers.internal:8072"
+
+  [http.middlewares]
+    [http.middlewares.websocket-headers.headers]
+      customRequestHeaders = {Upgrade = "websocket", Connection = "Upgrade"}
+
+[tls]
+  [[tls.certificates]]
+    certFile = "/etc/traefik/certs/localhost.crt"
+    keyFile = "/etc/traefik/certs/localhost.key"

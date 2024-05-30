@@ -1,0 +1,15 @@
+[entryPoints]
+  [entryPoints.web]
+    address = ":80"
+  [entryPoints.websecure]
+    address = ":443"
+
+[api]
+  dashboard = true
+
+[providers.file]
+  filename = "/etc/traefik/traefik_provider.toml"
+  watch = true
+
+[accessLog]
+  format = "common"
