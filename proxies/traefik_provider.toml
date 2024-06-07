@@ -1,35 +1,35 @@
 [http]
   [http.routers]
     [http.routers.http]
-      rule = "Host(`localhost`)"
+      rule = "HostRegexp(`.*`)"
       entryPoints = ["web"]
       service = "main"
 
     [http.routers.https]
-      rule = "Host(`localhost`)"
+      rule = "HostRegexp(`.*`)"
       entryPoints = ["websecure"]
       service = "main"
       [http.routers.https.tls]
 
     [http.routers.longpolling_http]
-      rule = "Host(`localhost`) && PathPrefix(`/longpolling`)"
+      rule = "HostRegexp(`.*`) && PathPrefix(`/longpolling`)"
       entryPoints = ["web"]
       service = "longpolling"
 
     [http.routers.longpolling_https]
-      rule = "Host(`localhost`) && PathPrefix(`/longpolling`)"
+      rule = "HostRegexp(`.*`) && PathPrefix(`/longpolling`)"
       entryPoints = ["websecure"]
       service = "longpolling"
       [http.routers.longpolling_https.tls]
 
     [http.routers.websocket_http]
-      rule = "Host(`localhost`) && PathPrefix(`/websocket`)"
+      rule = "HostRegexp(`.*`) && PathPrefix(`/websocket`)"
       entryPoints = ["web"]
       service = "websocket"
       middlewares = ["websocket-headers"]
 
     [http.routers.websocket_https]
-      rule = "Host(`localhost`) && PathPrefix(`/websocket`)"
+      rule = "HostRegexp(`.*`) && PathPrefix(`/websocket`)"
       entryPoints = ["websecure"]
       service = "websocket"
       middlewares = ["websocket-headers"]
@@ -55,5 +55,5 @@
 
 [tls]
   [[tls.certificates]]
-    certFile = "/etc/traefik/certs/localhost.crt"
+    certFile = "/etc/traefik/certs/localhost.pem"
     keyFile = "/etc/traefik/certs/localhost.key"
