@@ -9,8 +9,6 @@ services:
     volumes:
       - ./bin/entrypoint:/usr/local/bin/entrypoint:ro
       - ./bin/odoo:/usr/local/bin/odoo:ro
-      - ~/src/odoo:/home/odoo/src/odoo:ro
-      - ~/src/enterprise:/home/odoo/src/enterprise:ro
       - ~/src/upgrade:/home/odoo/src/upgrade:ro
       - ~/src/upgrade-util:/home/odoo/src/upgrade-util:ro
       - /var/run/postgresql:/var/run/postgresql:ro

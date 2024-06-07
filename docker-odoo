@@ -2,23 +2,66 @@
 import argparse
 import os
 import re
+
+from pathlib import Path
 from subprocess import run
 
 IMAGES = [(14.0, "jammy"), (6.1, "bionic")]
+SRC = Path.home() / "src"
+COMMUNITY = SRC / "odoo"
+ENTERPRISE = SRC / "enterprise"
+THEMES = SRC / "design-themes"
+UPGRADE_UTIL = SRC / "upgrade-util"
+UPGRADE = SRC / "upgrade"
 
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
 parser.add_argument("--image", help="Docker image")
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
+parser.add_argument("--addons-path", help="Addon paths")
+parser.add_argument("--upgrade-path", help="Upgrade paths")
+parser.add_argument("--database", "-d", help="Database")
+parser.add_argument("--debugpy-wait", help="Asks debugpy to wait for client connection", action="store_true")
 
 args, extra_args = parser.parse_known_args()
-extra_args.extend(["--branch", args.branch])
 
 longpolling_port = str(int(args.http_port) + 3)
 debug_port = 5678 + (int(args.http_port) - 8069)
 
-odoo_version = float(".".join(re.findall(r"\d+", args.branch)[0:2]) or "inf")
+odoo_branch = args.branch
+odoo_path = COMMUNITY / odoo_branch
+
+odoo_release = {}
+odoo_release_file = next(path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists)
+with odoo_release_file.open() as fp:
+    exec(fp.read(), {}, odoo_release)
+odoo_version = float(".".join(re.findall(r"\d+", odoo_release["version"])[0:2]))
+
 docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
+
+paths = {}
+for path_type in ["addons", "upgrade"]:
+    if getattr(args, f"{path_type}_path"):
+        paths[path_type] = [Path(path) for path in args.addons_path.split(",")]
+
+if "addons" not in paths:
+    paths["addons"] = [odoo_path / "addons"]
+    for path in [ENTERPRISE, THEMES]:
+        p = path / odoo_branch
+        if p.exists():
+            # In 9.0, enterprise must be put before community in addons path,
+            # for the web from enterprise which overrides the web module from community
+            paths["addons"].insert(0, p)
+            break
+
+if "upgrade" not in paths and odoo_version >= 13.0:
+    # Before 13.0, it's a symlink from `upgrade` to `odoo/addons/base/maintenance`
+    paths["upgrade"] = [UPGRADE_UTIL / "src", UPGRADE / "migrations"]
+
+if args.database:
+    extra_args.extend(["--database", args.database])
+    if odoo_version < 11.0:
+        extra_args.append(f"--db-filter=^({args.database})$")
 
 run(
     ["podman-compose", "build", "odoo"],
@@ -26,7 +69,15 @@ run(
     cwd=os.path.dirname(os.path.realpath(__file__)),
 )
 
-command = ["podman-compose", "run", "--rm", "-p", f"{debug_port}:5678"]
+mount_odoo_path = Path("/home/odoo") / odoo_path.relative_to(Path.home())
+
+command = ["podman-compose", "run", "--rm", "-p", f"{debug_port}:5678", "-v", f"{odoo_path}:{mount_odoo_path}:ro"]
+
+for path_type, dirs in paths.items():
+    mount_dirs = [Path("/home/odoo") / path.relative_to(Path.home()) for path in dirs]
+    for path, mount_path in zip(dirs, mount_dirs):
+        command += ["-v", f"{path}:{mount_path}:ro"]
+    extra_args.extend([f"--{path_type}-path", ",".join(str(path) for path in mount_dirs)])
 
 if not extra_args or extra_args[0] != "shell":
     command += [
@@ -35,13 +86,20 @@ if not extra_args or extra_args[0] != "shell":
         "-p",
         f"{longpolling_port}:8072",
     ]
-command += [
-    "odoo",
-    "odoo",
-]
 
-run(
-    command + extra_args,
-    env=dict(os.environ, DOCKERFILE=docker_file),
-    cwd=os.path.dirname(os.path.realpath(__file__)),
-)
+# Name of the service in the docker-compose file
+command += ["odoo"]
+
+python_bin = "python3" if odoo_version >= 11.0 else "python2"
+odoo_bin_name = "odoo-bin" if odoo_version > 9.0 else "openerp-server"
+odoo_bin = mount_odoo_path / odoo_bin_name
+command += [python_bin]
+
+debugpy = ["-m", "debugpy", "--listen", "0.0.0.0:5678"]
+if args.debugpy_wait:
+    debugpy += ["--wait-for-client"]
+command += debugpy
+
+command += [odoo_bin, *extra_args]
+
+run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=os.path.dirname(os.path.realpath(__file__)))
