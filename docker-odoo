@@ -42,7 +42,7 @@ docker_file = args.image if args.image else next(image for version, image in IMA
 paths = {}
 for path_type in ["addons", "upgrade"]:
     if getattr(args, f"{path_type}_path"):
-        paths[path_type] = [Path(path) for path in args.addons_path.split(",")]
+        paths[path_type] = [Path(path).expanduser() for path in args.addons_path.split(",")]
 
 if "addons" not in paths:
     paths["addons"] = [odoo_path / "addons"]
