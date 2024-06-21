@@ -37,3 +37,9 @@ And access your Odoo server with either of the domains:
 - https://localhost
 - https://`hostname`, for instance https://dle-odoo, you can know yours with `echo $(hostname)`
 - https://odoo.local
+
+Add the parameters to your `./odoo-bin` command:
+- `--proxy-mode`, as your a now behind a web proxy, to have the redirections working correctly.
+  Otherwise it will redirect to `http://` all the time.
+- `--workers=8`, as the proxy configuration is meant for the websocket to work in multi-worker mode.
+  Otherwise the instant messaging won't work correctly.
