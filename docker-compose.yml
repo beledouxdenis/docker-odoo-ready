@@ -19,3 +19,5 @@ services:
     cap_add:
       - NET_ADMIN
       - NET_RAW  # Required only for Ubuntu Bionic. From focal it's no longer required.
+x-podman:
+    in_pod: false  # See https://github.com/containers/podman-compose/pull/964

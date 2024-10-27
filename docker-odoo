@@ -65,7 +65,7 @@ if args.database:
 
 run(
     ["podman-compose", "build", "odoo"],
-    env={"DOCKERFILE": docker_file},
+    env=dict(os.environ, DOCKERFILE=docker_file),
     cwd=os.path.dirname(os.path.realpath(__file__)),
 )
 

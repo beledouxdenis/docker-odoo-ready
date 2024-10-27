@@ -33,8 +33,11 @@ for b in $security_branches; do for r in $security_repositories; do git -C $src/
 src=~/src
 
 # Install requirements
-sudo apt install podman-compose postgresql
+sudo apt install podman postgresql pipx
 sudo su - postgres -c "createuser $USER --createdb"
+# newer version of podman-compose than the one provided by Ubuntu distribution, to include
+# https://github.com/containers/podman-compose/pull/916
+pipx install podman-compose==1.2.0
 
 # Setup the repository and symlink the binary in a bin folder within the PATH
 cd $src && git clone git@github.com:beledouxdenis/docker-odoo-ready.git
