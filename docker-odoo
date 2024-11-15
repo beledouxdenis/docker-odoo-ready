@@ -21,6 +21,7 @@ parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
 parser.add_argument("--addons-path", help="Addon paths")
 parser.add_argument("--upgrade-path", help="Upgrade paths")
 parser.add_argument("--database", "-d", help="Database")
+parser.add_argument("-m", nargs="+", help="Debugging mode and script line (e.g., -m pudb file.py:42)")
 parser.add_argument("--debugpy-wait", help="Asks debugpy to wait for client connection", action="store_true")
 
 args, extra_args = parser.parse_known_args()
@@ -92,13 +93,16 @@ command += ["odoo"]
 
 python_bin = "python3" if odoo_version >= 11.0 else "python2"
 odoo_bin_name = "odoo-bin" if odoo_version > 9.0 else "openerp-server"
-odoo_bin = mount_odoo_path / odoo_bin_name
+odoo_bin = str(mount_odoo_path / odoo_bin_name)
 command += [python_bin]
 
-debugpy = ["-m", "debugpy", "--listen", "0.0.0.0:5678"]
-if args.debugpy_wait:
-    debugpy += ["--wait-for-client"]
-command += debugpy
+if args.m:
+    command += ["-m"] + args.m
+else:
+    debugpy = ["-m", "debugpy", "--listen", "0.0.0.0:5678"]
+    if args.debugpy_wait:
+        debugpy += ["--wait-for-client"]
+    command += debugpy
 
 command += [odoo_bin, *extra_args]
 
