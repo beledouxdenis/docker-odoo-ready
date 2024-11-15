@@ -42,7 +42,7 @@ RUN apt-get update -y \
     # Install Google Chrome
     ./chrome.deb \
     # Install debugging tools
-    less ipython3 python3-pudb \
+    less ipython3 python3-pudb vim \
     # Install iptables to restrict network
     iptables \
     # Use the iptables-nft instead of legacy xtable. Otherwise, when using iptables in the container, leads to

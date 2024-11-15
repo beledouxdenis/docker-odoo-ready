@@ -47,7 +47,7 @@ RUN apt-get update -y \
     # Install Google Chrome
     ./chrome.deb \
     # Install debugging tools
-    less ipython python-pudb ipython3 python3-pudb \
+    less ipython python-pudb ipython3 python3-pudb vim \
     # Install iptables to restrict network
     iptables \
     # Install PIP2 depdendencies for Odoo

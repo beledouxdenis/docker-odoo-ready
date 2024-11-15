@@ -30,8 +30,8 @@ RUN apt-get update -y \
     python3-zeep \
     # Set python3 by default
     python-is-python3 \
-    # Install pip, to install python dependencies not packaged by Ubuntu
-    python3-pip \
+    # Install pip and venv, to install python dependencies not packaged by Ubuntu
+    python3-pip python3-venv \
     # Install lessc
     node-less \
     # Install npm, to install node dependencies not packaged by Ubuntu
@@ -43,14 +43,21 @@ RUN apt-get update -y \
     # Install Google Chrome
     ./chrome.deb \
     # Install debugging tools
-    less ipython3 python3-pudb \
+    less vim \
     # Install iptables to restrict network
     iptables \
+    # Create a virtual env for PIP dependencies and activate it
+    && python -m venv /venv --system-site-packages && . /venv/bin/activate \
+    # Upgrade PIP
+    && pip install --upgrade pip \
     # Install PIP dependencies for Odoo
     && pip install --no-cache-dir ebaysdk firebase-admin==2.17.0 inotify pdf417gen \
     # Install PIP debug tools
-    debugpy \
+    debugpy ipython pudb \
     # Install node dependencies for Odoo
     && npm install -g rtlcss@2.5.0 \
     # Cleanup
     && rm -rf ./chrome.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+    # Activate the virtual env by default, to run Odoo using the virtual env
+    ENV PATH="/venv/bin:$PATH"
