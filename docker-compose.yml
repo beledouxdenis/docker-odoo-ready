@@ -6,6 +6,7 @@ services:
       dockerfile: "images/${DOCKERFILE}.dockerfile"
     image: "localhost/odoo:${DOCKERFILE}"
     userns_mode: "keep-id"  # To keep same UID/GID as host, mainly for the postgresql sockect connection
+    network_mode: "slirp4netns"
     volumes:
       - ./bin/entrypoint:/usr/local/bin/entrypoint:ro
       - ./bin/odoo:/usr/local/bin/odoo:ro
