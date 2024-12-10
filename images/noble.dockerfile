@@ -2,18 +2,22 @@ FROM ubuntu:noble
 
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 NODE_ENV=production TERM=xterm-256color
 
-RUN apt-get update -y \
+RUN PLATFORM=$(dpkg --print-architecture) && \
+    apt-get update -y \
     && apt-get upgrade -y \
-    # Install required package to add an apt repository key
-    && apt-get install -y --no-install-recommends ca-certificates gnupg2 wget \
-    # Add the Odoo nightly repository key
-    && wget -q -O - https://nightly.odoo.com/odoo.key | gpg --dearmor > /usr/share/keyrings/odoo-nightly.gpg \
-    # Add the Odoo nightly repository
-    && echo 'deb [signed-by=/usr/share/keyrings/odoo-nightly.gpg] http://nightly.odoo.com/deb/jammy ./' \
-    > /etc/apt/sources.list.d/odoo-nightly.list \
+    # Install required packages to download non packaged debs
+    && apt-get install -y --no-install-recommends wget ca-certificates \
+    # Fetch wkhtmltopdf (for report printing)
+    && wget -q --show-progres --progress=bar:force:noscroll -O wkhtmltox.deb \
+    https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_${PLATFORM}.deb \
     # Fetch Google Chrome (for web tour tests)
-    && wget -q --show-progres --progress=bar:force:noscroll -O chrome.deb \
-    https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_123.0.6312.58-1_amd64.deb \
+    # Google currently does not provide an arm64 build for Google Chrome
+    # And the `chromium` package requires `snapd` which does not work in docker
+    # If you need tours on arm64, use the `bookworm` image
+    && if [ "$PLATFORM" = "amd64" ]; then \
+        wget -q --show-progress --progress=bar:force:noscroll -O chrome.deb \
+        https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_126.0.6478.182-1_amd64.deb; \
+    fi \
     # Continue install after fetching debs
     && apt-get update -y \
     && apt-get install -y --no-install-recommends \
@@ -37,15 +41,15 @@ RUN apt-get update -y \
     # Install npm, to install node dependencies not packaged by Ubuntu
     npm \
     # Install wkhtmltopf
-    wkhtmltox \
+    ./wkhtmltox.deb \
     # Install fonts
     fonts-freefont-ttf fonts-khmeros-core fonts-noto-cjk fonts-ocr-b fonts-vlgothic gsfonts \
-    # Install Google Chrome
-    ./chrome.deb \
     # Install debugging tools
     less vim \
     # Install iptables to restrict network
     iptables \
+    # Install Google Chrome if available
+    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends chrome.deb; fi \
     # Create a virtual env for PIP dependencies and activate it
     && python -m venv /venv --system-site-packages && . /venv/bin/activate \
     # Upgrade PIP
@@ -59,7 +63,7 @@ RUN apt-get update -y \
     # Remove the default user ubuntu with UID 1000, so podman can use the host user with UID 1000 if needed.
     && userdel ubuntu \
     # Cleanup
-    && rm -rf ./chrome.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf ./chrome.deb ./wkhtmltox.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
     # Activate the virtual env by default, to run Odoo using the virtual env
     ENV PATH="/venv/bin:$PATH"

@@ -25,7 +25,7 @@ RUN apt-get update -y \
     # Install npm, to install node dependencies not packaged by Ubuntu
     npm \
     # Install wkhtmltopf
-    wkhtmltox \
+    wkhtmltopdf \
     # Install fonts
     fonts-freefont-ttf fonts-noto-cjk fonts-ocr-b fonts-vlgothic gsfonts \
     # Install Chromium for web tours
