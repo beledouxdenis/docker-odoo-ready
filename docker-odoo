@@ -17,6 +17,7 @@ UPGRADE = SRC / "upgrade"
 parser = argparse.ArgumentParser(add_help=False)
 parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
 parser.add_argument("--image", help="Docker image")
+parser.add_argument("--build", help="Force rebuilding the image", action="store_true")
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
 parser.add_argument("--addons-path", help="Addon paths")
 parser.add_argument("--upgrade-path", help="Upgrade paths")
@@ -64,15 +65,12 @@ if args.database:
     if odoo_version < 11.0:
         extra_args.append(f"--db-filter=^({args.database})$")
 
-run(
-    ["podman-compose", "build", "odoo"],
-    env=dict(os.environ, DOCKERFILE=docker_file),
-    cwd=os.path.dirname(os.path.realpath(__file__)),
-)
-
 mount_odoo_path = Path("/home/odoo") / odoo_path.relative_to(Path.home())
 
-command = ["podman-compose", "run", "--rm", "-p", f"{debug_port}:5678", "-v", f"{odoo_path}:{mount_odoo_path}:ro"]
+command = ["podman-compose", "run"]
+if args.build:
+    command += ["--build"]
+command += ["--rm", "-p", f"{debug_port}:5678", "-v", f"{odoo_path}:{mount_odoo_path}:ro"]
 
 for path_type, dirs in paths.items():
     mount_dirs = [Path("/home/odoo") / path.relative_to(Path.home()) for path in dirs]
@@ -99,6 +97,8 @@ command += [python_bin]
 if args.m:
     command += ["-m"] + args.m
 else:
+    if python_bin == "python3":
+        command += ["-Xfrozen_modules=off"]
     debugpy = ["-m", "debugpy", "--listen", "0.0.0.0:5678"]
     if args.debugpy_wait:
         debugpy += ["--wait-for-client"]
