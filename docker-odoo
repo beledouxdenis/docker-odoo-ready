@@ -34,7 +34,7 @@ odoo_branch = args.branch
 odoo_path = COMMUNITY / odoo_branch
 
 odoo_release = {}
-odoo_release_file = next(path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists)
+odoo_release_file = next(path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists())
 with odoo_release_file.open() as fp:
     exec(fp.read(), {}, odoo_release)
 odoo_version = float(".".join(re.findall(r"\d+", odoo_release["version"])[0:2]))
