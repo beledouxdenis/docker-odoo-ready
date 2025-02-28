@@ -2,21 +2,24 @@ FROM ubuntu:focal
 
 ENV DEBIAN_FRONTEND=noninteractive LANG=C.UTF-8 NODE_ENV=production TERM=xterm-256color
 
-RUN apt-get update -y \
+RUN PLATFORM=$(dpkg --print-architecture) && \
+    apt-get update -y \
     && apt-get upgrade -y \
-    # Install required package to add an apt repository key
-    && apt-get install -y --no-install-recommends ca-certificates gnupg2 wget \
-    # Add the Odoo nightly repository key
-    && wget -q -O - https://nightly.odoo.com/odoo.key | gpg --dearmor > /usr/share/keyrings/odoo-nightly.gpg \
-    # Add the Odoo nightly repository
-    && echo 'deb [signed-by=/usr/share/keyrings/odoo-nightly.gpg] http://nightly.odoo.com/deb/focal ./' \
-    > /etc/apt/sources.list.d/odoo-nightly.list \
+    # Install required packages to download non packaged debs
+    && apt-get install -y --no-install-recommends ca-certificates wget \
+    # Fetch wkhtmltopdf (for report printing)
+    && wget -q --show-progres --progress=bar:force:noscroll -O wkhtmltox.deb \
+    https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_${PLATFORM}.deb \
     # Fetch Google Chrome (for web tour tests)
-    && wget -q --show-progres --progress=bar:force:noscroll -O chrome.deb \
-    https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_123.0.6312.58-1_amd64.deb \
+    && if [ "$PLATFORM" = "amd64" ]; then \
+        wget -q --show-progress --progress=bar:force:noscroll -O chrome.deb \
+        https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_126.0.6478.182-1_amd64.deb; \
+    fi \
     # Continue install after fetching debs
     && apt-get update -y \
     && apt-get install -y --no-install-recommends \
+    # Required dependencies for Pillow, required for arm64 compatibility, compilation is done on the fly
+    build-essential libjpeg8-dev zlib1g-dev \
     # Install python dependencies for Odoo
     pylint python3-aiosmtpd python3-asn1crypto python3-astroid python3-babel python3-dateutil python3-dbfread \
     python3-decorator python3-dev python3-docopt python3-docutils python3-feedparser python3-fonttools \
@@ -30,29 +33,34 @@ RUN apt-get update -y \
     # Set python3 by default
     python-is-python3 \
     # Install pip, to install python dependencies not packaged by Ubuntu
-    python3-pip \
+    python3-pip python3-venv \
     # Install lessc
     node-less \
     # Install npm, to install node dependencies not packaged by Ubuntu
     npm \
     # Install wkhtmltopf
-    wkhtmltox \
+    ./wkhtmltox.deb \
     # Install fonts
     fonts-freefont-ttf fonts-khmeros-core fonts-noto-cjk fonts-ocr-b fonts-vlgothic gsfonts \
-    # Install Google Chrome
-    ./chrome.deb \
     # Install debugging tools
-    less ipython3 python3-pudb vim \
+    less vim \
     # Install iptables to restrict network
     iptables \
+    # Install Google Chrome if available
+    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends chrome.deb; fi \
     # Use the iptables-nft instead of legacy xtable. Otherwise, when using iptables in the container, leads to
     # Fatal: can't open lock file /run/xtables.lock: Permission denied
     && update-alternatives --set iptables /usr/sbin/iptables-nft \
+    # Create a virtual env for PIP dependencies and activate it
+    && python -m venv /venv --system-site-packages && . /venv/bin/activate \
     # Install PIP dependencies for Odoo
     && pip install --no-cache-dir ebaysdk firebase-admin==2.17.0 inotify pdf417gen \
     # Install PIP debug tools
-    debugpy \
+    debugpy ipython pudb \
     # Install node dependencies for Odoo
     && npm install -g rtlcss@2.5.0 \
     # Cleanup
-    && rm -rf ./chrome.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
+    && rm -rf ./chrome.deb ./wkhtmltox.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+    # Activate the virtual env by default, to run Odoo using the virtual env
+    ENV PATH="/venv/bin:$PATH"
