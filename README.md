@@ -53,3 +53,9 @@ odoo -b 17.0 -d 17.0 --image focal
 odoo -b 17.0 -d 17.0 --domain-whitelist=www.google.com,google.com
 odoo shell -b 17.0 -d 17.0
 ```
+
+### Incoming test mail server, to test mails outgoing from odoo
+```sh
+podman run --rm --name maildev -p 1025:1025 -p 1080:1080 docker.io/maildev/maildev
+odoo -b 18.0 -d 18.0 --smtp host.containers.internal --smtp-port 1025
+```
