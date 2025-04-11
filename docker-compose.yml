@@ -7,6 +7,8 @@ services:
     image: "localhost/odoo:${DOCKERFILE}"
     userns_mode: "keep-id"  # To keep same UID/GID as host, mainly for the postgresql sockect connection
     network_mode: "slirp4netns"
+    environment:
+      - DISPLAY=${DISPLAY}
     volumes:
       - ./bin/entrypoint:/usr/local/bin/entrypoint:ro
       - ./bin/odoo:/usr/local/bin/odoo:ro
@@ -16,6 +18,7 @@ services:
       - ~/.local/share/Odoo:/home/odoo/.local/share/Odoo
       - ~/.ipython:/home/odoo/.ipython
       - ~/.config/pudb:/home/odoo/.config/pudb
+      - /tmp/.X11-unix:/tmp/.X11-unix:ro
     entrypoint: entrypoint
     cap_add:
       - NET_ADMIN
