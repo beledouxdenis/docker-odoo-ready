@@ -47,7 +47,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install iptables to restrict network
     iptables \
     # Install Google Chrome if available
-    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends chrome.deb; fi \
+    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends ./chrome.deb; fi \
     # Use the iptables-nft instead of legacy xtable. Otherwise, when using iptables in the container, leads to
     # Fatal: can't open lock file /run/xtables.lock: Permission denied
     && update-alternatives --set iptables /usr/sbin/iptables-nft \

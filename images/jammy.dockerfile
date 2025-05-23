@@ -46,7 +46,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install iptables to restrict network
     iptables \
     # Install Google Chrome if available
-    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends chrome.deb; fi \
+    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends ./chrome.deb; fi \
     # Create a virtual env for PIP dependencies and activate it
     && python -m venv /venv --system-site-packages && . /venv/bin/activate \
     # Upgrade PIP

@@ -52,7 +52,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install iptables to restrict network
     iptables \
     # Install Google Chrome if available
-    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends chrome.deb; fi \
+    && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends ./chrome.deb; fi \
     # Install PIP2 depdendencies for Odoo
     && pip install --no-cache-dir ebaysdk==2.1.4 pyPdf==1.13 Pillow==3.4.1 suds-jurko==0.6 \
     # Install PIP2 debug tools
