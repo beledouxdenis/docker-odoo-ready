@@ -16,7 +16,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # If you need tours on arm64, use the `bookworm` image
     && if [ "$PLATFORM" = "amd64" ]; then \
         wget -q --show-progress --progress=bar:force:noscroll -O chrome.deb \
-        https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_126.0.6478.182-1_amd64.deb; \
+        https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_136.0.7103.92-1_amd64.deb; \
     fi \
     # Continue install after fetching debs
     && apt-get update -y \
