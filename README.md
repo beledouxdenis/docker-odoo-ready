@@ -3,7 +3,7 @@
 ```sh
 src=~/src
 repositories="odoo enterprise design-themes"
-branches="7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 saas-17.2 saas-17.4 18.0 saas-18.1"
+branches="7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 saas-18.2 saas-18.3 saas-18.4"
 upgrade_repositories="upgrade-util upgrade"
 security_repositories="odoo enterprise"
 security_branches="8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0"
