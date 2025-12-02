@@ -54,14 +54,15 @@ for path_type in ["addons", "upgrade"]:
         paths[path_type] = [Path(path).expanduser() for path in args.addons_path.split(",")]
 
 if "addons" not in paths:
-    paths["addons"] = [odoo_path / "addons"]
-    for path in [ENTERPRISE, THEMES]:
-        p = path / odoo_branch
-        if p.exists():
-            # In 9.0, enterprise must be put before community in addons path,
-            # for the web from enterprise which overrides the web module from community
-            paths["addons"].insert(0, p)
-            break
+    paths["addons"] = []
+paths["addons"].insert(0, odoo_path / "addons")
+for path in [ENTERPRISE, THEMES]:
+    p = path / odoo_branch
+    if p.exists():
+        # In 9.0, enterprise must be put before community in addons path,
+        # for the web from enterprise which overrides the web module from community
+        paths["addons"].insert(0, p)
+        break
 
 if "upgrade" not in paths and odoo_version >= 13.0:
     # Before 13.0, it's a symlink from `upgrade` to `odoo/addons/base/maintenance`

@@ -31,7 +31,7 @@ def restrict_network(domains):
         # Allow existing connections to continue
         "-A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT",
         # Reject the rest
-        "-A OUTPUT -j REJECT",
+        #"-A OUTPUT -j REJECT",
     ]:
         run(["iptables"] + rule.split())
 
