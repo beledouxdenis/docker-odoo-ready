@@ -61,7 +61,11 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     && pip3 install --no-cache-dir --upgrade pip "setuptools<58" \
     # Install PIP3 depdendencies for Odoo
     && pip3 install --no-cache-dir \
-    ebaysdk==2.1.5 firebase-admin==2.17.0 num2words==0.5.10 suds-jurko==0.6 xlwt==1.3.* zeep==3.2.0 \
+    ebaysdk==2.1.5 num2words==0.5.10 suds-jurko==0.6 xlwt==1.3.* zeep==3.2.0 \
+    # Pin the dependencies of firebase-admin, to avoid compatibility issues with the system python deps,
+    # in particular with cryptography, because the dependencies of firebase-admin are not pinned
+    # https://github.com/firebase/firebase-admin-python/blob/v2.7.0/requirements.txt#L6-L8
+    firebase-admin==2.17.0 google-api-core==1.32.0 google-auth==1.35.0 google-cloud-firestore==2.5.3 google-cloud-storage==2.0.0 \
     # Install PIP3 debug tools
     debugpy \
     # Install node dependencies for Odoo

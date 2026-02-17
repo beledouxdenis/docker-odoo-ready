@@ -52,7 +52,11 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Upgrade PIP
     && pip install --upgrade pip \
     # Install PIP dependencies for Odoo
-    && pip install --no-cache-dir ebaysdk firebase-admin==2.17.0 inotify pdf417gen \
+    && pip install --no-cache-dir ebaysdk inotify pdf417gen \
+    # Pin the dependencies of firebase-admin, to avoid compatibility issues with the system python deps,
+    # in particular with cryptography, because the dependencies of firebase-admin are not pinned
+    # https://github.com/firebase/firebase-admin-python/blob/v2.7.0/requirements.txt#L6-L8
+    firebase-admin==2.17.0 google-api-core==1.33.1 google-auth==2.12.0 google-cloud-firestore==2.7.1 google-cloud-storage==2.5.0 \
     # Install PIP debug tools
     debugpy ipython pudb \
     # Install node dependencies for Odoo
