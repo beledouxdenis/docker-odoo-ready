@@ -16,6 +16,7 @@ services:
       - ~/src/upgrade-util:/home/odoo/src/upgrade-util:ro
       - /var/run/postgresql:/var/run/postgresql:ro
       - ~/.local/share/Odoo:/home/odoo/.local/share/Odoo
+      - ~/.odoorc:/home/odoo/.odoorc
       - ~/.ipython:/home/odoo/.ipython
       - ~/.config/pudb:/home/odoo/.config/pudb
       - /tmp/.X11-unix:/tmp/.X11-unix:ro

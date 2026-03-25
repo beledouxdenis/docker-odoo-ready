@@ -41,6 +41,9 @@ odoo_version = float(".".join(re.findall(r"\d+", odoo_release["version"])[0:2]))
 
 docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
 
+if not (odoo_rc := Path.home() / ".odoorc").exists():
+    odoo_rc.touch()
+
 paths = {}
 for path_type in ["addons", "upgrade"]:
     if getattr(args, f"{path_type}_path"):
