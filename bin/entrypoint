@@ -48,4 +48,4 @@ if __name__ == "__main__":
     if args.domain_whitelist:
         restrict_network(args.domain_whitelist.split(","))
 
-    run(extra_args, env=dict(os.environ, HOME="/home/odoo"))
+    run(extra_args)

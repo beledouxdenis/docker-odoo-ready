@@ -63,8 +63,12 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     debugpy ipython pudb \
     # Install node dependencies for Odoo
     && npm install -g rtlcss@2.5.0 \
+    # Create required folders, e.g. for ipython, pudb, google-chrome, and odoo (~/.local/share/Odoo)
+    # mode 755 as the user is created on the fly with --userns=keep-id and we do not know it's UID at build time
+    && mkdir -p -m 777 /home/odoo/.cache /home/odoo/.config /home/odoo/.local/share/ \
     # Cleanup
     && rm -rf ./chrome.deb ./wkhtmltox.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
     # Activate the virtual env by default, to run Odoo using the virtual env
-    ENV PATH="/venv/bin:$PATH"
+    # Set the $HOME to /home/odoo for Odoo but also google-chrome
+    ENV PATH="/venv/bin:$PATH" HOME="/home/odoo"

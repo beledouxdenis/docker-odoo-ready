@@ -72,3 +72,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     && npm install -g rtlcss@2.4.0 \
     # Cleanup
     && rm -rf ./chrome.deb ./wkhtmltox.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+    # Activate the virtual env by default, to run Odoo using the virtual env
+    # Set the $HOME to /home/odoo for Odoo but also google-chrome
+    ENV PATH="/venv/bin:$PATH" HOME="/home/odoo"
