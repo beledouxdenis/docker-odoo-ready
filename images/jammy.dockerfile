@@ -13,7 +13,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Fetch Google Chrome (for web tour tests)
     && if [ "$PLATFORM" = "amd64" ]; then \
         wget -q --show-progress --progress=bar:force:noscroll -O chrome.deb \
-        https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_136.0.7103.92-1_amd64.deb; \
+        https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_145.0.7632.116-1_amd64.deb; \
     fi \
     # Continue install after fetching debs
     && apt-get update -y \
