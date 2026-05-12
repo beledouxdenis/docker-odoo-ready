@@ -39,8 +39,6 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     python3-vatnumber python3-vobject python3-websocket python3-werkzeug python3-xlrd python3-xlsxwriter python3-yaml \
     # Install pip, to install python dependencies not packaged by Ubuntu
     python-pip python3-pip \
-    # Install lessc
-    node-less \
     # Install npm, to install node dependencies not packaged by Ubuntu
     npm \
     # Install wkhtmltopf
@@ -69,7 +67,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install PIP3 debug tools
     debugpy \
     # Install node dependencies for Odoo
-    && npm install -g rtlcss@2.4.0 \
+    && npm install -g rtlcss@2.4.0 less@2 less-plugin-clean-css@1 \
     # Cleanup
     && rm -rf ./chrome.deb ./wkhtmltox.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
