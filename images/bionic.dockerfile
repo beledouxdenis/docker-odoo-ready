@@ -46,9 +46,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install fonts
     fonts-freefont-ttf fonts-khmeros-core fonts-noto-cjk fonts-ocr-b fonts-vlgothic \
     # Install debugging tools
-    less ipython python-pudb ipython3 python3-pudb vim \
-    # Install iptables to restrict network
-    iptables \
+    curl less ipython python-pudb ipython3 python3-pudb vim \
     # Install Google Chrome if available
     && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends ./chrome.deb; fi \
     # Install PIP2 depdendencies for Odoo

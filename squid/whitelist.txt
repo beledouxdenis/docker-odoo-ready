@@ -1,0 +1,4 @@
+ocn.odoo.com
+pad.odoo.com
+.chatgpt.com
+auth.openai.com

@@ -1,14 +1,28 @@
 version: '3.7'
 services:
+  squid:
+    container_name: squid
+    image: ubuntu/squid:latest
+    ports:
+      - "3128:3128"
+    volumes:
+      - ./squid/squid.conf:/etc/squid/squid.conf
+      - ./squid/whitelist.txt:/etc/squid/whitelist.txt
+    networks:
+      - internal
+      - internet
+
   odoo:
     build:
       context: .
       dockerfile: "images/${DOCKERFILE}.dockerfile"
     image: "localhost/odoo:${DOCKERFILE}"
     userns_mode: "keep-id"  # To keep same UID/GID as host, mainly for the postgresql sockect connection
-    network_mode: "slirp4netns"
     environment:
       - DISPLAY=${DISPLAY}
+      - HTTP_PROXY=http://squid:3128
+      - HTTPS_PROXY=http://squid:3128
+      - NO_PROXY=localhost,127.0.0.1,squid
     volumes:
       - ./bin/entrypoint:/usr/local/bin/entrypoint:ro
       - ./bin/odoo:/usr/local/bin/odoo:ro
@@ -20,9 +34,14 @@ services:
       - ~/.ipython:/home/odoo/.ipython
       - ~/.config/pudb:/home/odoo/.config/pudb
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
-    entrypoint: entrypoint
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW  # Required only for Ubuntu Bionic. From focal it's no longer required.
+    networks:
+      - internal
+
+networks:
+  internal:
+    internal: true
+  internet:
+    driver: bridge
+
 x-podman:
     in_pod: false  # See https://github.com/containers/podman-compose/pull/964

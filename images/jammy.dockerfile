@@ -42,9 +42,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install fonts
     fonts-freefont-ttf fonts-khmeros-core fonts-noto-cjk fonts-ocr-b fonts-vlgothic gsfonts \
     # Install debugging tools
-    less vim \
-    # Install iptables to restrict network
-    iptables \
+    curl less vim \
     # Install Google Chrome if available
     && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends ./chrome.deb; fi \
     # Create a virtual env for PIP dependencies and activate it

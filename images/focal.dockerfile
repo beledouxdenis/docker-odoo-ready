@@ -43,14 +43,9 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install fonts
     fonts-freefont-ttf fonts-khmeros-core fonts-noto-cjk fonts-ocr-b fonts-vlgothic gsfonts \
     # Install debugging tools
-    less vim \
-    # Install iptables to restrict network
-    iptables \
+    curl less vim \
     # Install Google Chrome if available
     && if [ -f chrome.deb ]; then apt-get install -y --no-install-recommends ./chrome.deb; fi \
-    # Use the iptables-nft instead of legacy xtable. Otherwise, when using iptables in the container, leads to
-    # Fatal: can't open lock file /run/xtables.lock: Permission denied
-    && update-alternatives --set iptables /usr/sbin/iptables-nft \
     # Create a virtual env for PIP dependencies and activate it
     && python -m venv /venv --system-site-packages && . /venv/bin/activate \
     # Install PIP dependencies for Odoo

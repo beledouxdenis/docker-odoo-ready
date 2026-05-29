@@ -37,9 +37,7 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Install Chromium for web tours
     chromium \
     # Install debugging tools
-    less vim \
-    # Install iptables to restrict network
-    iptables \
+    curl less vim \
     # Create a virtual env for PIP dependencies and activate it
     && python -m venv /venv --system-site-packages && . /venv/bin/activate \
     # Upgrade PIP

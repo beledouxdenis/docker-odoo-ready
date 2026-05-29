@@ -27,11 +27,6 @@ parser.add_argument(
     help="Additional volume, same syntax as podman -v/--volume. Can be repeated.",
 )
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
-parser.add_argument(
-    "--domain-whitelist",
-    help="Comma-separated domains. Restrict internet to HTTP connections to these domains",
-    default="ocn.odoo.com,pad.odoo.com",
-)
 parser.add_argument("--codex", help="Use the image using codex", action="store_true")
 
 args, extra_args = parser.parse_known_args()
@@ -46,9 +41,6 @@ command = ["podman-compose", "-f", "docker-compose.yml"]
 
 if args.codex:
     command += ["-f", "docker-compose-codex.yml"]
-    args.domain_whitelist = ",".join(args.domain_whitelist.split(",") + ["chatgpt.com", "auth.openai.com"])
-
-extra_args.extend(["--domain-whitelist", args.domain_whitelist])
 
 command += ["run"]
 
@@ -89,5 +81,10 @@ else:
     docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
 
     command += ["odoo", *extra_args]
+
+result = run(["podman", "inspect", "-f", "{{.State.Running}}", "squid"], check=False, capture_output=True, text=True)
+
+if result.returncode != 0 or result.stdout.strip() != "true":
+    run(["podman-compose", "up", "-d", "squid"], check=True)
 
 run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=os.path.dirname(os.path.realpath(__file__)), check=False)
