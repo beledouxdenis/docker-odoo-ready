@@ -8,11 +8,6 @@ from subprocess import run
 IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
 SRC = Path.home() / "src"
 COMMUNITY = SRC / "odoo"
-ENTERPRISE = SRC / "enterprise"
-THEMES = SRC / "design-themes"
-UPGRADE_UTIL = SRC / "upgrade-util"
-UPGRADE = SRC / "upgrade"
-DEFAULT_MOUNTS = (COMMUNITY, ENTERPRISE, THEMES, UPGRADE, UPGRADE_UTIL)
 ODOO_COMMANDS = {"shell", "scaffold", "cloc"}
 
 parser = argparse.ArgumentParser(add_help=False)
@@ -49,9 +44,7 @@ if args.build:
 
 command += ["--rm", "-p", f"{debug_port}:5678"]
 
-mounts = [f"{path}:/home/odoo/src/{path.name}:ro" for path in DEFAULT_MOUNTS] + args.volume
-
-command += [arg for mount in mounts for arg in ["-v", mount]]
+command += [arg for mount in args.volume for arg in ["-v", mount]]
 
 if not extra_args or extra_args[0] not in ODOO_COMMANDS:
     command += [
