@@ -1,0 +1,11 @@
+services:
+  odoo:
+    build:
+      dockerfile: "images/${DOCKERFILE}-codex.dockerfile"
+    image: "localhost/odoo:${DOCKERFILE}-codex"
+
+    volumes:
+      - ~/.local/share/docker-odoo/codex:/home/odoo/.codex:Z
+
+    environment:
+      CODEX_HOME: /home/odoo/.codex

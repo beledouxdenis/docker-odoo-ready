@@ -12,80 +12,56 @@ ENTERPRISE = SRC / "enterprise"
 THEMES = SRC / "design-themes"
 UPGRADE_UTIL = SRC / "upgrade-util"
 UPGRADE = SRC / "upgrade"
+DEFAULT_MOUNTS = (COMMUNITY, ENTERPRISE, THEMES, UPGRADE, UPGRADE_UTIL)
+ODOO_COMMANDS = {"shell", "scaffold", "cloc"}
 
 parser = argparse.ArgumentParser(add_help=False)
-parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
+parser.add_argument("--branch", "-b", help="Odoo branch", default="master")
 parser.add_argument("--image", help="Docker image")
 parser.add_argument("--build", help="Force rebuilding the image", action="store_true")
+parser.add_argument(
+    "--volume",
+    "-v",
+    action="append",
+    default=[],
+    help="Additional volume, same syntax as podman -v/--volume. Can be repeated.",
+)
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
-parser.add_argument("--addons-path", help="Addon paths")
-parser.add_argument("--upgrade-path", help="Upgrade paths")
-parser.add_argument("--database", "-d", help="Database")
-parser.add_argument("-m", nargs="+", help="Debugging mode and script line (e.g., -m pudb file.py:42)")
-parser.add_argument("--debugpy-wait", help="Asks debugpy to wait for client connection", action="store_true")
+parser.add_argument(
+    "--domain-whitelist",
+    help="Comma-separated domains. Restrict internet to HTTP connections to these domains",
+    default="ocn.odoo.com,pad.odoo.com",
+)
+parser.add_argument("--codex", help="Use the image using codex", action="store_true")
 
 args, extra_args = parser.parse_known_args()
 
 longpolling_port = str(int(args.http_port) + 3)
 debug_port = 5678 + (int(args.http_port) - 8069)
 
-odoo_branch = args.branch
-odoo_path = COMMUNITY / odoo_branch
-
-odoo_release = {}
-odoo_release_file = next(path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists())
-with odoo_release_file.open() as fp:
-    exec(fp.read(), {}, odoo_release)
-odoo_version = float(".".join(re.findall(r"\d+", odoo_release["version"])[0:2]))
-
-docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
-
 if not (odoo_rc := Path.home() / ".odoorc").exists():
     odoo_rc.touch()
 
-paths = {}
-for path_type in ["addons", "upgrade"]:
-    if getattr(args, f"{path_type}_path"):
-        paths[path_type] = [Path(path).expanduser() for path in args.addons_path.split(",")]
+command = ["podman-compose", "-f", "docker-compose.yml"]
 
-if "addons" not in paths:
-    paths["addons"] = [odoo_path / "addons"]
-    for path in [ENTERPRISE, THEMES]:
-        p = path / odoo_branch
-        if p.exists():
-            # In 9.0, enterprise must be put before community in addons path,
-            # for the web from enterprise which overrides the web module from community
-            paths["addons"].insert(0, p)
-            break
+if args.codex:
+    command += ["-f", "docker-compose-codex.yml"]
+    args.domain_whitelist = ",".join(args.domain_whitelist.split(",") + ["chatgpt.com", "auth.openai.com"])
 
-if "upgrade" not in paths and odoo_version >= 13.0:
-    # Before 13.0, it's a symlink from `upgrade` to `odoo/addons/base/maintenance`
-    paths["upgrade"] = [UPGRADE_UTIL / "src", UPGRADE / "migrations"]
+extra_args.extend(["--domain-whitelist", args.domain_whitelist])
 
-if args.database:
-    extra_args.extend(["--database", args.database])
-    if odoo_version < 11.0:
-        extra_args.append(f"--db-filter=^({args.database})$")
+command += ["run"]
 
-if odoo_version >= 19.0 and "--without-demo" not in extra_args:
-    extra_args.append("--with-demo")
-if odoo_version >= 19.1:
-    extra_args.append("--http-interface=0.0.0.0")
-
-mount_odoo_path = Path("/home/odoo") / odoo_path.relative_to(Path.home())
-
-command = ["podman-compose", "run"]
 if args.build:
     command += ["--build"]
-command += ["--rm", "-p", f"{debug_port}:5678", "-v", f"{odoo_path}:{mount_odoo_path}:ro"]
 
-for path_type, dirs in paths.items():
-    mount_dirs = [Path("/home/odoo") / path.relative_to(Path.home()) for path in dirs]
-    for path, mount_path in zip(dirs, mount_dirs):
-        command += ["-v", f"{path}:{mount_path}:ro"]
-    extra_args.extend([f"--{path_type}-path", ",".join(str(path) for path in mount_dirs)])
+command += ["--rm", "-p", f"{debug_port}:5678"]
 
-if not extra_args or extra_args[0] != "shell":
+mounts = [f"{path}:/home/odoo/src/{path.name}:ro" for path in DEFAULT_MOUNTS] + args.volume
+
+command += [arg for mount in mounts for arg in ["-v", mount]]
+
+if not extra_args or extra_args[0] not in ODOO_COMMANDS:
     command += [
         "-p",
         f"127.0.0.1:{args.http_port}:8069",
@@ -96,21 +72,22 @@ if not extra_args or extra_args[0] != "shell":
 # Name of the service in the docker-compose file
 command += ["odoo"]
 
-python_bin = "python3" if odoo_version >= 11.0 else "python2"
-odoo_bin_name = "odoo-bin" if odoo_version > 9.0 else "openerp-server"
-odoo_bin = str(mount_odoo_path / odoo_bin_name)
-command += [python_bin]
-
-if args.m:
-    command += ["-m"] + args.m
+if extra_args and not extra_args[0].startswith("-") and extra_args[0] not in ODOO_COMMANDS:
+    command += extra_args
+    docker_file = args.image if args.image else IMAGES[0][1]
 else:
-    if python_bin == "python3":
-        command += ["-Xfrozen_modules=off"]
-    debugpy = ["-m", "debugpy", "--listen", "0.0.0.0:5678"]
-    if args.debugpy_wait:
-        debugpy += ["--wait-for-client"]
-    command += debugpy
+    odoo_branch = args.branch
+    extra_args.extend(["--branch", args.branch])
+    odoo_path = COMMUNITY / odoo_branch
 
-command += [odoo_bin, *extra_args]
+    odoo_release_file = next(
+        path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists()
+    )
+    odoo_version = re.search(r"version_info = \((.*)\)", odoo_release_file.read_text())
+    odoo_version = float(".".join(re.findall(r"\d+", "".join(odoo_version.groups()[0].split(",")[:2]))))
+
+    docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
+
+    command += ["odoo", *extra_args]
 
 run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=os.path.dirname(os.path.realpath(__file__)), check=False)

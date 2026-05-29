@@ -1,0 +1,82 @@
+#!/usr/bin/env python3
+import argparse
+import re
+from pathlib import Path
+from subprocess import run
+
+SRC = Path.home() / "src"
+COMMUNITY = SRC / "odoo"
+ENTERPRISE = SRC / "enterprise"
+THEMES = SRC / "design-themes"
+UPGRADE_UTIL = SRC / "upgrade-util"
+UPGRADE = SRC / "upgrade"
+
+parser = argparse.ArgumentParser(add_help=False)
+parser.add_argument("--branch", "-b", help="Odoo branch", required=True)
+parser.add_argument("--addons-path", help="Addon paths")
+parser.add_argument("--database", "-d", help="Database")
+parser.add_argument("-m", nargs="+", help="Debugging mode and script line (e.g., -m pudb file.py:42)")
+parser.add_argument("--debugpy-wait", help="Asks debugpy to wait for client connection", action="store_true")
+
+args, extra_args = parser.parse_known_args()
+
+odoo_branch = args.branch
+odoo_path = COMMUNITY / odoo_branch
+
+odoo_release = {}
+odoo_release_file = next(path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists())
+odoo_version = re.search(r"version_info = \((.*)\)", odoo_release_file.read_text())
+odoo_version = float(".".join(re.findall(r"\d+", "".join(odoo_version.groups()[0].split(",")[:2]))))
+
+python_bin = "python3" if odoo_version >= 11.0 else "python2"
+odoo_bin_name = "odoo-bin" if odoo_version > 9.0 else "openerp-server"
+
+odoo_bin = str(odoo_path / odoo_bin_name)
+
+command = [python_bin]
+
+if args.m:
+    command += ["-m"] + args.m
+else:
+    if python_bin == "python3":
+        command += ["-Xfrozen_modules=off"]
+    debugpy = ["-m", "debugpy", "--listen", "0.0.0.0:5678"]
+    if args.debugpy_wait:
+        debugpy += ["--wait-for-client"]
+    command += debugpy
+
+if args.database:
+    extra_args.extend(["--database", args.database])
+    if odoo_version < 11.0:
+        extra_args.append(f"--db-filter=^({args.database})$")
+
+if odoo_version >= 19.0 and "--without-demo" not in extra_args:
+    extra_args.append("--with-demo")
+if odoo_version >= 19.1:
+    extra_args.append("--http-interface=0.0.0.0")
+
+paths = {}
+if args.addons_path:
+    paths["addons"] = [Path(path).expanduser() for path in args.addons_path.split(",")]
+
+if "addons" not in paths:
+    paths["addons"] = [odoo_path / "addons"]
+    for path in [ENTERPRISE, THEMES]:
+        p = path / odoo_branch
+        if p.exists():
+            # In 9.0, enterprise must be put before community in addons path,
+            # for the web from enterprise which overrides the web module from community
+            paths["addons"].insert(0, p)
+            break
+
+if "upgrade" not in paths and odoo_version >= 13.0:
+    # Before 13.0, it's a symlink from `upgrade` to `odoo/addons/base/maintenance`
+    paths["upgrade"] = [UPGRADE_UTIL / "src", UPGRADE / "migrations"]
+
+for path_type, dirs in paths.items():
+    mount_dirs = [Path("/home/odoo") / path.relative_to(Path.home()) for path in dirs]
+    extra_args.extend([f"--{path_type}-path", ",".join(str(path) for path in mount_dirs)])
+
+command += [odoo_bin, *extra_args]
+
+run(command, check=False)
