@@ -2,8 +2,8 @@
 import argparse
 import os
 import re
+import subprocess
 from pathlib import Path
-from subprocess import run
 
 IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
 SRC = Path.home() / "src"
@@ -75,9 +75,5 @@ else:
 
     command += ["odoo", *extra_args]
 
-result = run(["podman", "inspect", "-f", "{{.State.Running}}", "squid"], check=False, capture_output=True, text=True)
-
-if result.returncode != 0 or result.stdout.strip() != "true":
-    run(["podman-compose", "up", "-d", "squid"], check=True)
-
-run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=os.path.dirname(os.path.realpath(__file__)), check=False)
+subprocess.Popen(["podman-compose", "up", "-d", "squid"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=os.path.dirname(os.path.realpath(__file__)), check=False)
