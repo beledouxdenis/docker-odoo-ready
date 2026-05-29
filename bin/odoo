@@ -79,4 +79,7 @@ for path_type, dirs in paths.items():
 
 command += [odoo_bin, *extra_args]
 
-run(command, check=False)
+try:
+    run(command, check=False)
+except KeyboardInterrupt:
+    pass
