@@ -75,5 +75,6 @@ else:
 
     command += ["odoo", *extra_args]
 
-subprocess.Popen(["podman-compose", "up", "-d", "squid"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-subprocess.run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=os.path.dirname(os.path.realpath(__file__)), check=False)
+cwd = os.path.dirname(os.path.realpath(__file__))
+subprocess.Popen(["podman-compose", "up", "-d", "squid"], cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+subprocess.run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=cwd, check=False)
