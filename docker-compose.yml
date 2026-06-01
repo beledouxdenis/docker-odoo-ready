@@ -22,11 +22,11 @@ services:
       - HTTPS_PROXY=http://squid:3128
       - NO_PROXY=localhost,127.0.0.1,squid
     volumes:
-      - ~/src/odoo:/home/odoo/src/odoo:ro
-      - ~/src/enterprise:/home/odoo/src/enterprise:ro
-      - ~/src/design-themes:/home/odoo/src/design-themes:ro
-      - ~/src/upgrade:/home/odoo/src/upgrade:ro
-      - ~/src/upgrade-util:/home/odoo/src/upgrade-util:ro
+      - ~/src/odoo:/home/odoo/src/odoo
+      - ~/src/enterprise:/home/odoo/src/enterprise
+      - ~/src/design-themes:/home/odoo/src/design-themes
+      - ~/src/upgrade:/home/odoo/src/upgrade
+      - ~/src/upgrade-util:/home/odoo/src/upgrade-util
       - ./bin/odoo:/usr/local/bin/odoo:ro
       - /var/run/postgresql:/var/run/postgresql:ro
       - ~/.local/share/Odoo:/home/odoo/.local/share/Odoo
