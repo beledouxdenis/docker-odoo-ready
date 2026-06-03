@@ -15,3 +15,10 @@ services:
       WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal, very important
 
     working_dir: /workspace
+
+    command:
+      - codex
+      - --ask-for-approval
+      - never
+      - --sandbox
+      - danger-full-access
