@@ -9,6 +9,16 @@ services:
       - internal
       - internet
 
+  postgres:
+    container_name: postgres
+    image: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+    networks:
+      - internal
+
   odoo:
     build:
       context: .
@@ -21,6 +31,8 @@ services:
       - HTTP_PROXY=http://squid:3128
       - HTTPS_PROXY=http://squid:3128
       - NO_PROXY=localhost,127.0.0.1,squid
+      - PGHOST=postgres
+      - PGUSER=$USER
     volumes:
       - ~/.local/share/docker-odoo-ready/home:/home/$USER
       - ~/src/odoo:/home/$USER/src/odoo
@@ -29,10 +41,12 @@ services:
       - ~/src/upgrade:/home/$USER/src/upgrade
       - ~/src/upgrade-util:/home/$USER/src/upgrade-util
       - ./bin/odoo:/usr/local/bin/odoo:ro
-      - /var/run/postgresql:/var/run/postgresql:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
     networks:
       - internal
+
+volumes:
+  postgres-data:
 
 networks:
   internal:
