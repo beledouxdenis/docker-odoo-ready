@@ -10,5 +10,6 @@ services:
 
     environment:
       CODEX_HOME: /home/$USER/.codex
+      WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal, very important
 
     working_dir: /home/$USER/workspace
