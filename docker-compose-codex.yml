@@ -5,10 +5,10 @@ services:
     image: "localhost/odoo:${DOCKERFILE}-codex"
 
     volumes:
-      - ./.codex/home:/home/odoo/.codex:Z
-      - ./.codex/workspace:/home/odoo/workspace:Z
+      - ./.codex/home:/home/$USER/.codex:Z
+      - ./.codex/workspace:/home/$USER/workspace:Z
 
     environment:
-      CODEX_HOME: /home/odoo/.codex
+      CODEX_HOME: /home/$USER/.codex
 
-    working_dir: /home/odoo/workspace
+    working_dir: /home/$USER/workspace

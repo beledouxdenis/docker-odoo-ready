@@ -74,8 +74,7 @@ if "upgrade" not in paths and odoo_version >= 13.0:
     paths["upgrade"] = [UPGRADE_UTIL / "src", UPGRADE / "migrations"]
 
 for path_type, dirs in paths.items():
-    mount_dirs = [Path("/home/odoo") / path.relative_to(Path.home()) for path in dirs]
-    extra_args.extend([f"--{path_type}-path", ",".join(str(path) for path in mount_dirs)])
+    extra_args.extend([f"--{path_type}-path", ",".join(str(path) for path in dirs)])
 
 command += [odoo_bin, *extra_args]
 
