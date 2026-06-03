@@ -6,10 +6,10 @@ services:
 
     volumes:
       - ./.codex/home:/home/$USER/.codex:Z
-      - ./.codex/workspace:/home/$USER/workspace:Z
+      - ./.codex/workspace:/workspace:Z
 
     environment:
       CODEX_HOME: /home/$USER/.codex
       WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal, very important
 
-    working_dir: /home/$USER/workspace
+    working_dir: /workspace
