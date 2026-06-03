@@ -12,8 +12,8 @@ services:
   odoo:
     build:
       context: .
-      dockerfile: "images/${DOCKERFILE}.dockerfile"
-    image: "localhost/odoo:${DOCKERFILE}"
+      dockerfile: "images/${DOCKERFILE:-trixie}.dockerfile"
+    image: "localhost/odoo:${DOCKERFILE:-trixie}"
     userns_mode: "keep-id"  # To keep same UID/GID as host, mainly for the postgresql sockect connection
     environment:
       - HOME=/home/$USER/

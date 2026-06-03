@@ -1,8 +1,8 @@
 services:
   odoo:
     build:
-      dockerfile: "images/${DOCKERFILE}-codex.dockerfile"
-    image: "localhost/odoo:${DOCKERFILE}-codex"
+      dockerfile: "images/${DOCKERFILE:-trixie}-codex.dockerfile"
+    image: "localhost/odoo:${DOCKERFILE:-trixie}-codex"
 
     volumes:
       - ./.codex/home:/home/$USER/.codex:Z
