@@ -1,5 +1,7 @@
 services:
-  odoo:
+  codex:
+    extends:
+      service: odoo
     build:
       dockerfile: "images/${DOCKERFILE:-trixie}-codex.dockerfile"
     image: "localhost/odoo:${DOCKERFILE:-trixie}-codex"
