@@ -49,5 +49,5 @@ RUN apt-get update -y \
     # Cleanup
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-    # Activate the virtual env by default, to run Odoo using the virtual env
-    ENV PATH="/venv/bin:$PATH"
+# Activate the virtual env by default, to run Odoo using the virtual env
+ENV PATH="/venv/bin:$PATH"

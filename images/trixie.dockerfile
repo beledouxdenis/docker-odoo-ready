@@ -55,5 +55,5 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     # Cleanup
     && rm -rf ./wkhtmltox.deb /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-    # Activate the virtual env by default, to run Odoo using the virtual env
-    ENV PATH="/venv/bin:$PATH"
+# Activate the virtual env by default, to run Odoo using the virtual env
+ENV PATH="/venv/bin:$PATH"
