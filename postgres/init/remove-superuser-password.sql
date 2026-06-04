@@ -1,0 +1,1 @@
+ALTER ROLE postgres PASSWORD NULL;

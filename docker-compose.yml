@@ -11,11 +11,17 @@ services:
 
   postgres:
     container_name: postgres
-    image: postgres
+    build:
+      context: .
+      dockerfile: "images/postgres.dockerfile"
+    image: "localhost/postgres"
+    environment:
+      - POSTGRES_PASSWORD=unused-but-required-for-init-will-be-deleted-with-init-script-remove-superuser-password.sql
+      - POSTGRES_INITDB_ARGS=--auth-local=peer --auth-host=scram-sha-256
     volumes:
       - postgres-data:/var/lib/postgresql
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: trust
+      - postgres-socket:/var/run/postgresql
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
     networks:
       - internal
 
@@ -24,17 +30,16 @@ services:
       context: .
       dockerfile: "images/${DOCKERFILE:-trixie}.dockerfile"
     image: "localhost/odoo:${DOCKERFILE:-trixie}"
-    userns_mode: "keep-id"  # To keep same UID/GID as host, mainly for the postgresql sockect connection
+    user: odoo
     environment:
-      - HOME=/home/$USER/
       - DISPLAY=${DISPLAY}
       - HTTP_PROXY=http://squid:3128
       - HTTPS_PROXY=http://squid:3128
       - NO_PROXY=localhost,127.0.0.1,squid
-      - PGHOST=postgres
-      - PGUSER=$USER
+      - ODOO_SRC=/home/$USER/src/
     volumes:
-      - ~/.local/share/docker-odoo-ready/home:/home/$USER
+      - postgres-socket:/var/run/postgresql
+      - odoo-local:/home/odoo/.local
       - ~/src/odoo:/home/$USER/src/odoo
       - ~/src/enterprise:/home/$USER/src/enterprise
       - ~/src/design-themes:/home/$USER/src/design-themes
@@ -47,6 +52,8 @@ services:
 
 volumes:
   postgres-data:
+  postgres-socket:
+  odoo-local:
 
 networks:
   internal:
