@@ -7,8 +7,9 @@ services:
     image: "localhost/odoo:${DOCKERFILE:-trixie}-codex"
 
     volumes:
-      - ./.codex/home:/home/$USER/.codex:Z
-      - ./.codex/workspace:/workspace:Z
+      - codex-home:/home/$USER/.codex
+      - codex-workspace:/workspace
+      - ~/Downloads/codex-documents:/workspace/documents
 
     environment:
       CODEX_HOME: /home/$USER/.codex
@@ -22,3 +23,7 @@ services:
       - never
       - --sandbox
       - danger-full-access
+
+volumes:
+  codex-home:
+  codex-workspace:
