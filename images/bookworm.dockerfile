@@ -51,6 +51,7 @@ RUN apt-get update -y \
 
 # Activate the virtual env by default, to run Odoo using the virtual env
 ENV PATH="/venv/bin:$PATH"
+RUN printf '%s\n' 'export PATH="/venv/bin:$PATH"' >> /etc/profile
 
 # Create a user to not run odoo with the root user
 RUN useradd -m -s /bin/bash odoo
