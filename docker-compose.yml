@@ -33,10 +33,12 @@ services:
     user: odoo
     environment:
       - DISPLAY=${DISPLAY}
-      - HTTP_PROXY=http://squid:3128
-      - HTTPS_PROXY=http://squid:3128
-      - NO_PROXY=localhost,127.0.0.1,squid
       - ODOO_SRC=/home/$USER/src/
+    env_file:
+      # Proxy settings are injected only at runtime.
+      # During image builds, pip must bypass the HTTP proxy because PyPI and related
+      # package repositories are not included in the proxy whitelist.
+      - proxy.env
     volumes:
       - postgres-socket:/var/run/postgresql
       - odoo-local:/home/odoo/.local
