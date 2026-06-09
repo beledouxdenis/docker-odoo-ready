@@ -13,6 +13,7 @@ services:
 
     environment:
       CODEX_HOME: /home/$USER/.codex
+      VISUAL: vim  # To be able to use vim as editor in codex using CTRL + G
       WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal, very important
 
     working_dir: /workspace
