@@ -3,10 +3,8 @@
 ```sh
 src=~/src
 repositories="odoo enterprise design-themes"
-branches="7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 saas-18.2 saas-18.3 saas-18.4 19.0 saas-19.1 saas-19.2"
+branches="7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 saas-18.2 saas-18.3 saas-18.4 19.0 saas-19.1 saas-19.2 saas-19.3"
 upgrade_repositories="upgrade-util upgrade"
-security_repositories="odoo enterprise"
-security_branches="8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0"
 
 # Create the source folder
 mkdir $src
@@ -20,12 +18,6 @@ for b in $branches; do for r in $repositories; do git -C $src/$r/master worktree
 
 # Clone Odoo Upgrade repositories
 for r in $upgrade_repositories; do cd $src && git clone git@github.com:odoo/$r.git; done
-
-# Security branches (for Odoo employees having access)
-# Add the remote security repository
-for r in $security_repositories; do git -C $src/$r/master remote add security git@github.com:odoo/$r-security.git; done
-# Update the remote tracking branch of security branches to the security remote, and reset the HEAD
-for b in $security_branches; do for r in $security_repositories; do git -C $src/$r/$b fetch security $b && git -C $src/$r/$b branch -u security/$b && git -C $src/$r/$b reset --hard security/$b; done; done
 ```
 
 ### Setup this tool
@@ -33,11 +25,10 @@ for b in $security_branches; do for r in $security_repositories; do git -C $src/
 src=~/src
 
 # Install requirements
-sudo apt install podman postgresql pipx
-sudo su - postgres -c "createuser $USER --createdb"
+sudo apt install podman pipx
 # newer version of podman-compose than the one provided by Ubuntu distribution, to include
 # https://github.com/containers/podman-compose/pull/916
-pipx install podman-compose==1.2.0
+pipx install podman-compose
 
 # Setup the repository and symlink the binary in a bin folder within the PATH
 cd $src && git clone git@github.com:beledouxdenis/docker-odoo-ready.git
@@ -46,16 +37,36 @@ source ~/.profile # Apply the addition of ~/bin in the PATH
 ln -s $src/docker-odoo-ready/host/files/bin/odoo ~/bin/odoo
 ```
 
+### Build images
+```sh
+podman-compose build postgres
+podman-compose build odoo
+podman-compose build codex
+# For a specific image, if needed
+DOCKERFILE=noble podman-compose build odoo
+```
+
+### Run postgresql and squid in background
+```sh
+podman-compose up -d postgres squid
+```
+To add more domains in the whitelist of the HTTP proxy (squid), add domains in the file
+`containers/squid/files/whitelist.txt`
+
 ### Run Odoo
 ```sh
-odoo -b 17.0 -d 17.0
-odoo -b 17.0 -d 17.0 --image focal
-odoo -b 17.0 -d 17.0 --domain-whitelist=www.google.com,google.com
-odoo shell -b 17.0 -d 17.0
+odoo -b 19.0 -d 19.0
+odoo -b 19.0 -d 19.0 --image trixie
+odoo shell -b 19.0 -d 19.0
+```
+
+### Run codex
+```sh
+podman-compose run --rm codex
 ```
 
 ### Incoming test mail server, to test mails outgoing from odoo
 ```sh
 podman run --rm --name maildev -p 1025:1025 -p 1080:1080 docker.io/maildev/maildev
-odoo -b 18.0 -d 18.0 --smtp host.containers.internal --smtp-port 1025
+odoo -b 19.0 -d 19.0 --smtp host.containers.internal --smtp-port 1025
 ```
