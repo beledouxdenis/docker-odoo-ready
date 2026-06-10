@@ -1,0 +1,3 @@
+#!/bin/bash
+cd "$(dirname "$(readlink -f "$0")")/../../.."
+exec podman-compose run --rm codex "$@"

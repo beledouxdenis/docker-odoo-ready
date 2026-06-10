@@ -63,6 +63,12 @@ odoo shell -b 19.0 -d 19.0
 ### Run codex
 ```sh
 podman-compose run --rm codex
+# or
+ln -s $src/docker-odoo-ready/host/files/bin/odoo-codex ~/bin/odoo-codex
+# To mount additional folders to give to codex
+podman-compose run --rm -v path/to/host/folder:path/in/container codex
+# To run a shell
+podman-compose run --rm codex /bin/bash
 ```
 
 ### Incoming test mail server, to test mails outgoing from odoo
