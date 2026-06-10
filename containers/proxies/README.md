@@ -13,7 +13,7 @@ To generate the SSL certificates and make it trusted by Chrome, you can run (Res
 # You need to add your certificate to the browser trusted certificates database.
 # The snakeoil certificates which are installed by default with `ssl-certificate` could be used
 # but they work only for your machine name (hostname).
-# Generate a new one to support multiple domains: `localhost`, your host name and `odoo.local`
+# Generate a new one to support multiple domains: `localhost`, your host name and `odoo.local`.
 mkdir .certs
 openssl req -x509 -nodes -days 730 -newkey rsa:2048 -keyout .certs/localhost.key -out .certs/localhost.pem \
     -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,DNS:`hostname`,DNS:odoo.local"
@@ -27,11 +27,11 @@ you must first add `net.ipv4.ip_unprivileged_port_start=80` to `/etc/sysctl.conf
 then do `sudo sysctl -p`.
 
 Then you can run the proxy of your choice with podman:
-- [Nginx](nginx.md) (used on Odoo Online and Odoo.sh)
-- [Apache](apache.md)
-- [Caddy](caddy.md)
-- [Lighttpd](lighttpd.md)
-- [Traefik](traefik.md) (Kubernetes)
+- [Nginx](nginx/) (used on Odoo Online and Odoo.sh)
+- [Apache](apache/)
+- [Caddy](caddy/)
+- [Lighttpd](lighttpd/)
+- [Traefik](traefik/) (Kubernetes)
 
 And access your Odoo server with either of the domains:
 - https://localhost

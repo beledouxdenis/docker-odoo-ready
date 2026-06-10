@@ -3,8 +3,8 @@ services:
     container_name: squid
     image: docker.io/ubuntu/squid:latest
     volumes:
-      - ./squid/squid.conf:/etc/squid/squid.conf
-      - ./squid/whitelist.txt:/etc/squid/whitelist.txt
+      - ./containers/squid/files/squid.conf:/etc/squid/squid.conf
+      - ./containers/squid/files/whitelist.txt:/etc/squid/whitelist.txt
     networks:
       - internal
       - internet
@@ -13,7 +13,7 @@ services:
     container_name: postgres
     build:
       context: .
-      dockerfile: "images/postgres.dockerfile"
+      dockerfile: "containers/postgres/Containerfile"
     image: "localhost/postgres"
     environment:
       - POSTGRES_PASSWORD=unused-but-required-for-init-will-be-deleted-with-init-script-remove-superuser-password.sql
@@ -21,14 +21,14 @@ services:
     volumes:
       - postgres-data:/var/lib/postgresql
       - postgres-socket:/var/run/postgresql
-      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+      - ./containers/postgres/files/init:/docker-entrypoint-initdb.d:ro
     networks:
       - internal
 
   odoo:
     build:
       context: .
-      dockerfile: "images/${DOCKERFILE:-trixie}.dockerfile"
+      dockerfile: "containers/odoo/images/${DOCKERFILE:-trixie}/Containerfile"
     image: "localhost/odoo:${DOCKERFILE:-trixie}"
     user: odoo
     environment:
@@ -38,7 +38,7 @@ services:
       # Proxy settings are injected only at runtime.
       # During image builds, pip must bypass the HTTP proxy because PyPI and related
       # package repositories are not included in the proxy whitelist.
-      - proxy.env
+      - containers/odoo/proxy.env
     volumes:
       - postgres-socket:/var/run/postgresql
       - odoo-local:/home/odoo/.local
@@ -47,7 +47,7 @@ services:
       - ~/src/design-themes:/home/$USER/src/design-themes
       - ~/src/upgrade:/home/$USER/src/upgrade
       - ~/src/upgrade-util:/home/$USER/src/upgrade-util
-      - ./bin/odoo:/usr/local/bin/odoo:ro
+      - ./containers/odoo/files/bin/odoo:/usr/local/bin/odoo:ro
       - /tmp/.X11-unix:/tmp/.X11-unix:ro
     networks:
       - internal

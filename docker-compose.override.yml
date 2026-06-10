@@ -3,7 +3,7 @@ services:
     extends:
       service: odoo
     build:
-      dockerfile: "images/${DOCKERFILE:-trixie}-codex.dockerfile"
+      dockerfile: "containers/odoo/images/${DOCKERFILE:-trixie}-codex/Containerfile"
     image: "localhost/odoo:${DOCKERFILE:-trixie}-codex"
 
     volumes:

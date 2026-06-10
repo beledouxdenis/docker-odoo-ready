@@ -43,7 +43,7 @@ pipx install podman-compose==1.2.0
 cd $src && git clone git@github.com:beledouxdenis/docker-odoo-ready.git
 mkdir ~/bin
 source ~/.profile # Apply the addition of ~/bin in the PATH
-ln -s $src/docker-odoo-ready/docker-odoo ~/bin/odoo
+ln -s $src/docker-odoo-ready/host/files/bin/odoo ~/bin/odoo
 ```
 
 ### Run Odoo
