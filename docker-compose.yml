@@ -15,9 +15,10 @@ services:
       context: .
       dockerfile: "containers/postgres/Containerfile"
     image: "localhost/postgres"
+    userns_mode: "keep-id:uid=1000,gid=1000"
+    user: postgres
     environment:
       - POSTGRES_PASSWORD=unused-but-required-for-init-will-be-deleted-with-init-script-remove-superuser-password.sql
-      - POSTGRES_INITDB_ARGS=--auth-local=peer --auth-host=scram-sha-256
     volumes:
       - postgres-data:/var/lib/postgresql
       - postgres-socket:/var/run/postgresql
@@ -30,6 +31,7 @@ services:
       context: .
       dockerfile: "containers/odoo/images/${DOCKERFILE:-trixie}/Containerfile"
     image: "localhost/odoo:${DOCKERFILE:-trixie}"
+    userns_mode: "keep-id:uid=1000,gid=1000"
     user: odoo
     environment:
       - DISPLAY=${DISPLAY}
