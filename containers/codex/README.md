@@ -11,12 +11,7 @@ Source/environment:
   - Odoo enterprise is under  `/home/$USER/src/enterprise`
   - Under these folders, there is one worktree per Odoo version.
 * You can run an odoo server using the usual odoo-bin avaible in the odoo source code.
-* But, for ease of use for users, an helper wrapper is provided in `/usr/local/bin/odoo`.
-
- -  Example server command:
-    `odoo --branch 19.0 --database 19.0`
-* You can use the Odoo shell with:
-  `odoo shell --branch 19.0 --database 19.0`
+* You can use the Odoo shell with the `./odoo-bin shell` command
 * You do not have only Odoo 19, you have other versions such in 16, 17, 18.
   You can list the different versions using the source folders mentioned above
 * Available logins:
