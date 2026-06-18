@@ -20,7 +20,7 @@ services:
     working_dir: /workspace
 
     command:
-      - codex
+      - /home/odoo/bin/codex
       - --ask-for-approval
       - never
       - --sandbox

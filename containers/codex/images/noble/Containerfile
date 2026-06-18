@@ -1,6 +1,20 @@
+FROM debian:trixie AS codex
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends ca-certificates curl \
+ && mkdir -p /home/odoo/ \
+ && curl -A "Mozilla/5.0" -fsSL https://chatgpt.com/codex/install.sh | HOME=/home/odoo CODEX_NON_INTERACTIVE=1 sh \
+ && rm -rf /var/lib/apt/lists/*
+
 FROM localhost/odoo:noble
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends bubblewrap curl git postgresql-client ripgrep \
- && npm install -g @openai/codex \
  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=codex --chown=odoo:odoo /home/odoo/.codex /home/odoo/.codex
+USER odoo
+RUN mkdir -p /home/odoo/bin \
+ && ln -sf /home/odoo/.codex/packages/standalone/current/bin/codex /home/odoo/bin/codex
