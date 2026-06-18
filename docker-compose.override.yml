@@ -7,12 +7,13 @@ services:
     image: "localhost/odoo:${DOCKERFILE:-trixie}-codex"
 
     volumes:
-      - codex-home:/home/$USER/.codex
+      - codex-home:/home/odoo/.codex
+      - ./containers/codex/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
       - codex-workspace:/workspace
       - ~/Downloads/codex-documents:/workspace/documents
 
     environment:
-      CODEX_HOME: /home/$USER/.codex
+      CODEX_HOME: /home/odoo/.codex
       VISUAL: vim  # To be able to use vim as editor in codex using CTRL + G
       WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal, very important
 
