@@ -1,6 +1,6 @@
 FROM localhost/odoo:noble
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    bubblewrap curl git postgresql-client ripgrep \
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends bubblewrap curl git postgresql-client ripgrep \
  && npm install -g @openai/codex \
  && rm -rf /var/lib/apt/lists/*
