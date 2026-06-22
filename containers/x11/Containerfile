@@ -7,6 +7,7 @@ RUN apt-get update -y \
         novnc \
         procps \
         tigervnc-standalone-server \
+    && printf '%s\n' '<!doctype html><meta http-equiv="refresh" content="0; url=/vnc.html?autoconnect=true&path=websockify">' > /usr/share/novnc/index.html \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD ["/bin/sh", "-c", "Xtigervnc :1 -SecurityTypes None -localhost & exec /usr/share/novnc/utils/novnc_proxy --vnc 127.0.0.1:5901"]
