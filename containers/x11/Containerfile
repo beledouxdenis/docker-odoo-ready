@@ -1,0 +1,12 @@
+FROM debian:trixie-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends \
+        novnc \
+        procps \
+        tigervnc-standalone-server \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+CMD ["/bin/sh", "-c", "Xtigervnc :1 -SecurityTypes None -localhost & exec /usr/share/novnc/utils/novnc_proxy --vnc 127.0.0.1:5901"]

@@ -34,7 +34,7 @@ services:
     userns_mode: "keep-id:uid=1000,gid=1000"
     user: odoo
     environment:
-      - DISPLAY=${DISPLAY}
+      - DISPLAY=:1
       - ODOO_SRC=/home/$USER/src/
     env_file:
       # Proxy settings are injected only at runtime.
@@ -50,7 +50,20 @@ services:
       - ~/src/upgrade:/home/$USER/src/upgrade
       - ~/src/upgrade-util:/home/$USER/src/upgrade-util
       - ./containers/odoo/files/bin/odoo:/usr/local/bin/odoo:ro
-      - /tmp/.X11-unix:/tmp/.X11-unix:ro
+      - x11-socket:/tmp/.X11-unix
+    networks:
+      - internal
+
+  x11:
+    container_name: x11
+    build:
+      context: .
+      dockerfile: "containers/x11/Containerfile"
+    image: "localhost/x11"
+    volumes:
+      - x11-socket:/tmp/.X11-unix
+    ports:
+      - "127.0.0.1:6080:6080"
     networks:
       - internal
 
@@ -58,6 +71,7 @@ volumes:
   postgres-data:
   postgres-socket:
   odoo-local:
+  x11-socket:
 
 networks:
   internal:
