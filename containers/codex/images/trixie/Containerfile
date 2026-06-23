@@ -11,7 +11,7 @@ RUN apt-get update \
 FROM localhost/odoo:trixie
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends bubblewrap curl git postgresql-client ripgrep \
+ && apt-get install -y --no-install-recommends bubblewrap curl git poppler-utils postgresql-client ripgrep \
  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=codex --chown=odoo:odoo /home/odoo/.codex /home/odoo/.codex
