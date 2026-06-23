@@ -1,3 +1,8 @@
 FROM docker.io/library/postgres:18
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends postgresql-18-pgvector \
+    && echo "trusted = true" >> /usr/share/postgresql/18/extension/vector.control \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN useradd -m -s /bin/bash odoo
