@@ -10,7 +10,7 @@ upgrade_repositories="upgrade-util upgrade"
 mkdir $src
 
 # Clone Odoo repositories
-for r in $repositories; do mkdir $src/$r && cd $src/$r && git clone git@github.com:odoo/$r.git master && cd master && git switch master; done
+for r in $repositories; do mkdir $src/$r && cd $src/$r && git clone -b master git@github.com:odoo/$r.git master; done
 # Rename remote origin to odoo, add remote odoo-dev, for all repositories
 for r in $repositories; do git -C $src/$r/master remote rename origin odoo && git -C $src/$r/master remote add odoo-dev git@github.com:odoo-dev/$r.git;  done
 # Add a worktree for all branches for all repositories
