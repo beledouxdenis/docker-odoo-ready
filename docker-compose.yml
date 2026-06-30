@@ -35,7 +35,7 @@ services:
     user: odoo
     environment:
       - DISPLAY=:1
-      - ODOO_SRC=/home/$USER/src/
+      - ODOO_SRC=${ODOO_SRC:-$HOME/src}
     env_file:
       # Proxy settings are injected only at runtime.
       # During image builds, pip must bypass the HTTP proxy because PyPI and related
@@ -44,11 +44,11 @@ services:
     volumes:
       - postgres-socket:/var/run/postgresql:ro
       - odoo-local:/home/odoo/.local
-      - ~/src/odoo:/home/$USER/src/odoo
-      - ~/src/enterprise:/home/$USER/src/enterprise
-      - ~/src/design-themes:/home/$USER/src/design-themes
-      - ~/src/upgrade:/home/$USER/src/upgrade
-      - ~/src/upgrade-util:/home/$USER/src/upgrade-util
+      - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo
+      - ${ODOO_SRC:-$HOME/src}/enterprise:${ODOO_SRC:-$HOME/src}/enterprise
+      - ${ODOO_SRC:-$HOME/src}/design-themes:${ODOO_SRC:-$HOME/src}/design-themes
+      - ${ODOO_SRC:-$HOME/src}/upgrade:${ODOO_SRC:-$HOME/src}/upgrade
+      - ${ODOO_SRC:-$HOME/src}/upgrade-util:${ODOO_SRC:-$HOME/src}/upgrade-util
       - ./containers/odoo/files/bin/odoo:/usr/local/bin/odoo:ro
       - x11-socket:/tmp/.X11-unix
     networks:
