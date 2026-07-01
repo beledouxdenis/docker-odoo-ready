@@ -31,6 +31,9 @@ services:
       context: .
       dockerfile: "containers/odoo/images/${DOCKERFILE:-trixie}/Containerfile"
     image: "localhost/odoo:${DOCKERFILE:-trixie}"
+    depends_on:
+      - postgres
+      - squid
     userns_mode: "keep-id:uid=1000,gid=1000"
     user: odoo
     environment:

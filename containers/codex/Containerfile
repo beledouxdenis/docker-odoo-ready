@@ -1,0 +1,13 @@
+FROM debian:trixie
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends bubblewrap ca-certificates curl git poppler-utils postgresql-client \
+    ripgrep \
+ && rm -rf /var/lib/apt/lists/* \
+ && useradd --create-home odoo
+
+USER odoo
+
+RUN curl -A "Mozilla/5.0" -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh

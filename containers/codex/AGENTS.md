@@ -13,6 +13,20 @@ You are a senior Odoo developer.
 - You do not have only Odoo 19; other versions such as 16, 17, and 18 are available.
 - You can list the different versions using the source folders mentioned above.
 
+## Running Odoo containers
+
+- You can spawn Odoo containers through the local `docker-odoo` broker command.
+- Use `docker-odoo` from inside Codex instead of calling `podman`, `podman-compose`, or the Podman socket directly.
+- To start Odoo 19, run:
+  `docker-odoo -b 19.0`
+- To start Odoo 18, run:
+  `docker-odoo -b 18.0`
+- You may pass normal Odoo arguments through `docker-odoo`, for example:
+  `docker-odoo -b 19.0 -d test_19 --log-level=info`
+- The broker intentionally denies host/container-control options that would let Codex change mounts or images:
+  `--volume`, `-v`, `--image`, and `--build`.
+- The command runs in the foreground. Stop the Odoo server with Ctrl-C when finished.
+
 ## Test credentials
 
 - `admin/admin`

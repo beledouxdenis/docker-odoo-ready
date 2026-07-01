@@ -1,0 +1,12 @@
+FROM python:3.13-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends podman podman-compose \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/podman-broker
+COPY containers/podman-broker/broker.py ./
+
+CMD ["python3", "/opt/podman-broker/broker.py"]

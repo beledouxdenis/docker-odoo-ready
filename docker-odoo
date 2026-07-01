@@ -10,7 +10,7 @@ if platform.machine() in {"aarch64", "arm64"}:
     IMAGES = [(18.0, "trixie"), (14.0, "bookworm"), (6.1, "bionic")]
 else:
     IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
-SRC = Path.home() / "src"
+SRC = Path(os.environ.get("ODOO_SRC", Path.home() / "src"))
 COMMUNITY = SRC / "odoo"
 ODOO_COMMANDS = {"shell", "scaffold", "cloc"}
 
@@ -26,7 +26,6 @@ parser.add_argument(
     help="Additional volume, same syntax as podman -v/--volume. Can be repeated.",
 )
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
-parser.add_argument("--codex", help="Use the image using codex", action="store_true")
 
 args, extra_args = parser.parse_known_args()
 
@@ -37,10 +36,6 @@ if not (odoo_rc := Path.home() / ".odoorc").exists():
     odoo_rc.touch()
 
 command = ["podman-compose", "-f", "docker-compose.yml"]
-service = "codex" if args.codex else "odoo"
-
-if args.codex:
-    command += ["-f", "docker-compose.override.yml"]
 
 command += ["run"]
 
@@ -60,7 +55,7 @@ if not extra_args or extra_args[0] not in ODOO_COMMANDS:
     ]
 
 # Name of the service in the docker-compose file
-command += [service]
+command += ["odoo"]
 
 if extra_args and not extra_args[0].startswith("-") and extra_args[0] not in ODOO_COMMANDS:
     command += extra_args
@@ -81,5 +76,4 @@ else:
     command += ["odoo", *extra_args]
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-subprocess.Popen(["podman-compose", "-f", "docker-compose.yml", "up", "-d", "squid"], cwd=cwd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 subprocess.run(command, env=dict(os.environ, DOCKERFILE=docker_file), cwd=cwd, check=False)

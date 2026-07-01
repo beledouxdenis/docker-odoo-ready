@@ -1,31 +1,72 @@
 services:
-  codex:
-    extends:
-      service: odoo
+  podman-broker:
+    container_name: podman-broker
     build:
-      dockerfile: "containers/codex/images/${DOCKERFILE:-trixie}/Containerfile"
-    image: "localhost/odoo:${DOCKERFILE:-trixie}-codex"
+      context: .
+      dockerfile: containers/podman-broker/Containerfile
+    image: localhost/podman-broker
+    environment:
+      CONTAINER_HOST: unix:///run/podman/podman.sock
+      ODOO_SRC: ${ODOO_SRC:-$HOME/src}
+      PODMAN_BROKER_REPO: ${PWD}
+      PODMAN_BROKER_SOCKET: /broker/docker-odoo.sock
+    volumes:
+      - ${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock
+      - ${ODOO_SRC:-$HOME/src}:${ODOO_SRC:-$HOME/src}:ro
+      - ${PWD}:${PWD}:ro
+      - podman-broker-socket:/broker
+
+  codex:
+    build:
+      context: .
+      dockerfile: containers/codex/Containerfile
+    image: localhost/codex
+    depends_on:
+      - podman-broker
+      - postgres
+      - squid
+    networks:
+      - internal
+    userns_mode: "keep-id:uid=1000,gid=1000"
+    user: odoo
+    environment:
+      DISPLAY: :1
+      CODEX_HOME: /home/odoo/.codex
+      ODOO_SRC: ${ODOO_SRC:-$HOME/src}
+      PODMAN_BROKER_SOCKET: /broker/docker-odoo.sock
+      VISUAL: vim  # To be able to use vim as editor in codex using CTRL + G
+      WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal, very important
+    env_file:
+      # Proxy settings are injected only at runtime.
+      # During image builds, pip must bypass the HTTP proxy because PyPI and related
+      # package repositories are not included in the proxy whitelist.
+      - containers/odoo/proxy.env
 
     volumes:
+      - local:/home/odoo/.local
       - codex-home:/home/odoo/.codex
       - ./containers/codex/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
       - codex-workspace:/workspace
       - ~/Downloads/codex-documents:/workspace/documents
-
-    environment:
-      CODEX_HOME: /home/odoo/.codex
-      VISUAL: vim  # To be able to use vim as editor in codex using CTRL + G
-      WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal, very important
+      - podman-broker-socket:/broker
+      - ./containers/podman-broker/docker-odoo-client.py:/usr/local/bin/docker-odoo:ro
+      - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo
+      - ${ODOO_SRC:-$HOME/src}/enterprise:${ODOO_SRC:-$HOME/src}/enterprise
+      - ${ODOO_SRC:-$HOME/src}/design-themes:${ODOO_SRC:-$HOME/src}/design-themes
+      - ${ODOO_SRC:-$HOME/src}/upgrade:${ODOO_SRC:-$HOME/src}/upgrade
+      - ${ODOO_SRC:-$HOME/src}/upgrade-util:${ODOO_SRC:-$HOME/src}/upgrade-util
 
     working_dir: /workspace
 
     command:
-      - /home/odoo/bin/codex
+      - /home/odoo/.local/bin/codex
       - --ask-for-approval
       - never
       - --sandbox
       - danger-full-access
 
 volumes:
+  local:
   codex-home:
   codex-workspace:
+  podman-broker-socket:

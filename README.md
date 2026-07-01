@@ -46,13 +46,6 @@ podman-compose build codex
 DOCKERFILE=noble podman-compose build odoo
 ```
 
-### Run postgresql and squid in background
-```sh
-podman-compose up -d postgres squid
-```
-To add more domains in the whitelist of the HTTP proxy (squid), add domains in the file
-`containers/squid/files/whitelist.txt`
-
 ### Run Odoo
 ```sh
 odoo -b 19.0 -d 19.0
