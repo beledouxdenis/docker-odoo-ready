@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends bubblewrap ca-certificates curl git poppler-utils postgresql-client \
-    ripgrep \
+    python3 ripgrep \
  && rm -rf /var/lib/apt/lists/* \
  && useradd --create-home odoo
 

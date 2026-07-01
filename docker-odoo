@@ -35,7 +35,7 @@ debug_port = 5678 + (int(args.http_port) - 8069)
 if not (odoo_rc := Path.home() / ".odoorc").exists():
     odoo_rc.touch()
 
-command = ["podman-compose", "-f", "docker-compose.yml"]
+command = ["podman-compose"]
 
 command += ["run"]
 

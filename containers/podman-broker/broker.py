@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 
 
-SOCKET = Path(os.environ.get("PODMAN_BROKER_SOCKET", "/broker/docker-odoo.sock"))
+SOCKET = Path("/broker/docker-odoo.sock")
 REPO = os.environ["PODMAN_BROKER_REPO"]
 PARSER = argparse.ArgumentParser(add_help=False)
 PARSER.add_argument("--volume", "-v", action="append")

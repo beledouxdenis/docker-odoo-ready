@@ -3,7 +3,9 @@ FROM python:3.13-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends podman podman-compose \
+ && apt-get install -y --no-install-recommends podman-remote \
+ && ln -s /usr/bin/podman-remote /usr/local/bin/podman \
+ && pip install --no-cache-dir podman-compose \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/podman-broker
