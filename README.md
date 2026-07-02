@@ -66,6 +66,8 @@ podman-compose run --rm codex /bin/bash
 
 ### Incoming test mail server, to test mails outgoing from odoo
 ```sh
-podman run --rm --name maildev -p 1025:1025 -p 1080:1080 docker.io/maildev/maildev
-odoo -b 19.0 -d 19.0 --smtp host.containers.internal --smtp-port 1025
+podman-compose up -d mailpit
+odoo -b 19.0 -d 19.0 --smtp mailpit --smtp-port 1025
 ```
+
+The Mailpit web UI is available at http://127.0.0.1:8025.

@@ -57,6 +57,14 @@ services:
     networks:
       - internal
 
+  mailpit:
+    container_name: mailpit
+    image: docker.io/axllent/mailpit
+    ports:
+      - "127.0.0.1:8025:8025"
+    networks:
+      - internal
+
   x11:
     container_name: x11
     build:
