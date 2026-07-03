@@ -1,6 +1,7 @@
 FROM debian:trixie
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV NODE_PATH=/usr/local/lib/node_modules
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends bubblewrap ca-certificates curl git nodejs npm poppler-utils \
