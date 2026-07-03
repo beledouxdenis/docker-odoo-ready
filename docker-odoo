@@ -4,6 +4,7 @@ import os
 import platform
 import re
 import subprocess
+import sys
 import uuid
 from pathlib import Path
 
@@ -45,6 +46,9 @@ if args.build:
     command += ["--build"]
 
 command += ["--rm", "-p", f"{debug_port}:5678"]
+
+if not sys.stdin.isatty():
+    command += ["-T", "-e", "ODOO_PY_COLORS=1"]
 
 command += [arg for mount in args.volume for arg in ["-v", mount]]
 
