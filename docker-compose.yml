@@ -122,6 +122,7 @@ services:
       # package repositories are not included in the proxy whitelist.
       - containers/odoo/proxy.env
     volumes:
+      - postgres-socket:/var/run/postgresql:ro
       - local:/home/odoo/.local
       - codex-home:/home/odoo/.codex
       - ./containers/codex/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
