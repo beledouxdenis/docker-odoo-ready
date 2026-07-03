@@ -27,7 +27,14 @@ class Handler(socketserver.BaseRequestHandler):
 
     def run(self, argv):
         master, slave = pty.openpty()
-        process = subprocess.Popen(["./docker-odoo", *argv], cwd=REPO, stdin=slave, stdout=slave, stderr=slave, start_new_session=True)
+        process = subprocess.Popen(
+            ["./docker-odoo", "--internal-url", *argv],
+            cwd=REPO,
+            stdin=slave,
+            stdout=slave,
+            stderr=slave,
+            start_new_session=True,
+        )
         os.close(slave)
         try:
             while process.poll() is None:
