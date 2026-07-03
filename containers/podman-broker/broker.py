@@ -54,9 +54,10 @@ class Handler(socketserver.BaseRequestHandler):
                             return
                         self.request.sendall(data)
         finally:
-            os.close(master)
             if process.poll() is None:
-                os.killpg(process.pid, signal.SIGTERM)
+                os.killpg(process.pid, signal.SIGINT)
+                process.wait(timeout=15)
+            os.close(master)
 
 
 if __name__ == "__main__":
