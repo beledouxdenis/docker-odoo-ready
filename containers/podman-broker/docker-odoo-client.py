@@ -14,8 +14,9 @@ def main():
     old = termios.tcgetattr(sys.stdin) if sys.stdin.isatty() else None
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as broker:
         broker.connect(SOCKET)
+        broker.sendall(f"{int(bool(old))}\n".encode())
         broker.sendall("\0".join(sys.argv[1:]).encode() + b"\n")
-        inputs = [broker, *([sys.stdin.buffer] if old else [])]
+        inputs = [broker, sys.stdin.buffer]
         try:
             if old:
                 tty.setraw(sys.stdin)
@@ -30,6 +31,10 @@ def main():
                     else:
                         data = os.read(sys.stdin.fileno(), 65536)
                         if not data:
+                            if not old:
+                                broker.shutdown(socket.SHUT_WR)
+                                inputs.remove(sys.stdin.buffer)
+                                continue
                             return
                         broker.sendall(data)
         finally:

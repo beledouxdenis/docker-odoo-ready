@@ -49,8 +49,18 @@ PODMAN_COMMANDS = {
 
 
 class Handler(socketserver.BaseRequestHandler):
+    def _read_line(self):
+        data = bytearray()
+        while True:
+            chunk = self.request.recv(1)
+            if not chunk or chunk == b"\n":
+                break
+            data.extend(chunk)
+        return data.decode()
+
     def handle(self):
-        argv = self.request.makefile("rb").readline().rstrip(b"\n").decode().split("\0")
+        stdin_is_tty = self._read_line() == "1"
+        argv = self._read_line().split("\0")
         if argv and argv[0] in PODMAN_COMMANDS:
             if PODMAN_COMMANDS[argv[0]](argv):
                 process = subprocess.run(["podman", *argv], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -61,31 +71,43 @@ class Handler(socketserver.BaseRequestHandler):
         if any(vars(PARSER.parse_known_args(argv)[0]).values()):
             self.request.sendall(f"denied docker-odoo {' '.join(argv)}\n".encode())
             return
-        self.run(argv)
+        self.run(argv, stdin_is_tty=stdin_is_tty)
 
-    def run(self, argv):
-        master, slave = pty.openpty()
+    def run(self, argv, stdin_is_tty):
+        master, slave = pty.openpty() if stdin_is_tty else (None, None)
         process = subprocess.Popen(
             ["./docker-odoo", "--internal-url", *argv],
             cwd=REPO,
-            stdin=slave,
-            stdout=slave,
-            stderr=slave,
+            stdin=slave if stdin_is_tty else subprocess.PIPE,
+            stdout=slave if stdin_is_tty else subprocess.PIPE,
+            stderr=slave if stdin_is_tty else subprocess.STDOUT,
             start_new_session=True,
         )
-        os.close(slave)
+        if stdin_is_tty:
+            os.close(slave)
         try:
+            output = master if stdin_is_tty else process.stdout.fileno()
+            stdin_open = True
             while process.poll() is None:
-                for ready in select.select([self.request, master], [], [])[0]:
+                for ready in select.select([self.request, output], [], [])[0]:
                     if ready is self.request:
                         data = self.request.recv(65536)
                         if not data:
-                            process.terminate()
-                            return
-                        os.write(master, data)
+                            if stdin_is_tty:
+                                process.terminate()
+                                return
+                            elif stdin_open:
+                                process.stdin.close()
+                                stdin_open = False
+                            continue
+                        if stdin_is_tty:
+                            os.write(master, data)
+                        elif stdin_open:
+                            process.stdin.write(data)
+                            process.stdin.flush()
                     else:
                         try:
-                            data = os.read(master, 65536)
+                            data = os.read(output, 65536)
                         except OSError:
                             return
                         if not data:
@@ -95,7 +117,8 @@ class Handler(socketserver.BaseRequestHandler):
             if process.poll() is None:
                 os.killpg(process.pid, signal.SIGINT)
                 process.wait(timeout=15)
-            os.close(master)
+            if stdin_is_tty:
+                os.close(master)
 
 
 if __name__ == "__main__":
