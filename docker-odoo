@@ -45,14 +45,17 @@ command = ["podman-compose", "run", "--name", container_name]
 if args.build:
     command += ["--build"]
 
-command += ["--rm", "-p", f"{debug_port}:5678"]
+command += ["--rm"]
+
+if not args.internal_url:
+    command += ["-p", f"{debug_port}:5678"]
 
 if not sys.stdin.isatty():
     command += ["-T", "-e", "ODOO_PY_COLORS=1"]
 
 command += [arg for mount in args.volume for arg in ["-v", mount]]
 
-if exposes_http:
+if exposes_http and not args.internal_url:
     command += [
         "-p",
         f"127.0.0.1:{args.http_port}:8069",
