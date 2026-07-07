@@ -14,9 +14,15 @@ else:
     IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
 SRC = Path(os.environ.get("ODOO_SRC", Path.home() / "src"))
 COMMUNITY = SRC / "odoo"
-ODOO_COMMANDS = {"shell", "scaffold", "cloc"}
 
-parser = argparse.ArgumentParser(add_help=False)
+parser = argparse.ArgumentParser(
+    description="Run Odoo from the local source tree in a container.",
+    epilog=(
+        "Arguments not recognized by this wrapper are forwarded to Odoo or to the requested "
+        "command. Use --odoo-help to show odoo-bin help, or COMMAND --odoo-help for a specific "
+        "Odoo command."
+    ),
+)
 parser.add_argument("--branch", "-b", help="Odoo branch", default="master")
 parser.add_argument("--image", help="Docker image")
 parser.add_argument("--build", help="Force rebuilding the image", action="store_true")
@@ -29,12 +35,23 @@ parser.add_argument(
 )
 parser.add_argument("--http-port", "-p", help="HTTP Port", default="8069")
 parser.add_argument("--internal-url", action="store_true")
+parser.add_argument(
+    "--odoo-help",
+    action="store_true",
+    help="Show the selected branch's odoo-bin help.",
+)
 
 args, extra_args = parser.parse_known_args()
 
 longpolling_port = str(int(args.http_port) + 3)
 debug_port = 5678 + (int(args.http_port) - 8069)
-exposes_http = not extra_args or extra_args[0] not in ODOO_COMMANDS
+
+odoo_command = extra_args[0] if extra_args and not extra_args[0].startswith("-") else None
+
+exposes_http = not args.odoo_help and odoo_command in (None, "server")
+
+if args.odoo_help:
+    extra_args.append("--help")
 
 if not (odoo_rc := Path.home() / ".odoorc").exists():
     odoo_rc.touch()
@@ -47,7 +64,7 @@ if args.build:
 
 command += ["--rm"]
 
-if not args.internal_url:
+if odoo_command in (None, "server", "shell") and not args.odoo_help and not args.internal_url:
     command += ["-p", f"{debug_port}:5678"]
 
 if not sys.stdin.isatty():
@@ -63,26 +80,21 @@ if exposes_http and not args.internal_url:
         f"127.0.0.1:{longpolling_port}:8072",
     ]
 
-# Name of the service in the docker-compose file
 command += ["odoo"]
 
-if extra_args and not extra_args[0].startswith("-") and extra_args[0] not in ODOO_COMMANDS:
-    command += extra_args
-    docker_file = args.image if args.image else IMAGES[0][1]
-else:
-    odoo_branch = args.branch
-    extra_args.extend(["--branch", args.branch])
-    odoo_path = COMMUNITY / odoo_branch
+odoo_branch = args.branch
+extra_args.extend(["--branch", args.branch])
+odoo_path = COMMUNITY / odoo_branch
 
-    odoo_release_file = next(
-        path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists()
-    )
-    odoo_version = re.search(r"version_info = \((.*)\)", odoo_release_file.read_text())
-    odoo_version = float(".".join(re.findall(r"\d+", "".join(odoo_version.groups()[0].split(",")[:2]))))
+odoo_release_file = next(
+    path / "release.py" for path in [odoo_path / "odoo", odoo_path / "openerp"] if path.exists()
+)
+odoo_version = re.search(r"version_info = \((.*)\)", odoo_release_file.read_text())
+odoo_version = float(".".join(re.findall(r"\d+", "".join(odoo_version.groups()[0].split(",")[:2]))))
 
-    docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
+docker_file = args.image if args.image else next(image for version, image in IMAGES if odoo_version >= version)
 
-    command += ["odoo", *extra_args]
+command += ["odoo", *extra_args]
 
 cwd = os.path.dirname(os.path.realpath(__file__))
 if args.internal_url and exposes_http:
