@@ -119,6 +119,9 @@ services:
       ODOO_SRC: ${ODOO_SRC:-$HOME/src}
       PODMAN_BROKER_SOCKET: /broker/docker-odoo.sock
       VISUAL: vim  # To be able to use vim as editor in codex using CTRL + G
+      TERM: $TERM
+      TERM_PROGRAM: $TERM_PROGRAM  # To support codex pets in Ghostty
+      TERM_PROGRAM_VERSION: $TERM_PROGRAM_VERSION
       WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal
     env_file:
       # Proxy settings are injected only at runtime.
