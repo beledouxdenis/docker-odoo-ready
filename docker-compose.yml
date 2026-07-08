@@ -84,6 +84,8 @@ services:
       context: .
       dockerfile: containers/podman-broker/Containerfile
     image: localhost/podman-broker
+    networks:
+      - internal
     environment:
       CONTAINER_HOST: ${PODMAN_CONTAINER_HOST:-unix:///run/podman/podman.sock}
       CONTAINER_SSHKEY: /root/.ssh/podman-machine
