@@ -54,10 +54,32 @@ odoo shell -b 19.0 -d 19.0
 ```
 
 ### Run codex
+
+Codex can spawn odoo containers as he wishes.
+To restrict what codex can spawn and to not forward the podman socket entirely,
+the `podman-broker` container is meant to filter and restrict what codex can spawn on podman.
+This is to avoid for instance he would be able to escape its container by mounting a volume
+from the host to the container and change host files from within the container.
+
+For this, the `podman-broker` needs to be able to communicate with the host podman.
+On Linux, it's done by enabling the podman socket
+On Macos, it's done by using the default SSH connection given by `podman machine init`.
+
+For Linux only:
+```sh
+systemctl --user start podman.socket
+```
+
+For MacOS only:
+```sh
+uri="$(podman system connection list --format '{{if .Default}}{{.URI}}{{end}}')"
+key="$(podman system connection list --format '{{if .Default}}{{.Identity}}{{end}}')"
+printf 'PODMAN_CONTAINER_HOST=%s\n' "${uri/127.0.0.1/host.containers.internal}" >> .env
+printf 'PODMAN_CONTAINER_SSHKEY=%s\n' "${key}" >> .env
+```
+
 ```sh
 podman-compose run --rm codex
-# or
-ln -s $src/docker-odoo-ready/host/files/bin/odoo-codex ~/bin/odoo-codex
 # To mount additional folders to give to codex
 podman-compose run --rm -v path/to/host/folder:path/in/container codex
 # To run a shell

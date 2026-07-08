@@ -85,11 +85,13 @@ services:
       dockerfile: containers/podman-broker/Containerfile
     image: localhost/podman-broker
     environment:
-      CONTAINER_HOST: unix:///run/podman/podman.sock
+      CONTAINER_HOST: ${PODMAN_CONTAINER_HOST:-unix:///run/podman/podman.sock}
+      CONTAINER_SSHKEY: /root/.ssh/podman-machine
       ODOO_SRC: ${ODOO_SRC:-$HOME/src}
       PODMAN_BROKER_REPO: ${PWD}
     volumes:
-      - ${XDG_RUNTIME_DIR}/podman/podman.sock:/run/podman/podman.sock
+      - ${XDG_RUNTIME_DIR:-./containers/podman-broker/}/podman/podman.sock:/run/podman/podman.sock:ro
+      - ${PODMAN_CONTAINER_SSHKEY:-./containers/podman-broker/podman/empty.key}:/root/.ssh/podman-machine:ro
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo:ro
       - ./docker-compose.yml:${PWD}/docker-compose.yml:ro
       - ./docker-odoo:${PWD}/docker-odoo:ro
