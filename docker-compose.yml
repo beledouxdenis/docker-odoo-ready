@@ -47,6 +47,8 @@ services:
     volumes:
       - postgres-socket:/var/run/postgresql:ro
       - odoo-local:/home/odoo/.local
+      - odoo-config:/home/odoo/.config
+      - ipython:/home/odoo/.ipython
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo
       - ${ODOO_SRC:-$HOME/src}/enterprise:${ODOO_SRC:-$HOME/src}/enterprise
       - ${ODOO_SRC:-$HOME/src}/design-themes:${ODOO_SRC:-$HOME/src}/design-themes
@@ -129,6 +131,8 @@ services:
     volumes:
       - postgres-socket:/var/run/postgresql:ro
       - local:/home/odoo/.local
+      - config:/home/odoo/.config
+      - ipython:/home/odoo/.ipython
       - codex-home:/home/odoo/.codex
       - ./containers/codex/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
       - codex-workspace:/workspace
@@ -152,8 +156,11 @@ volumes:
   postgres-data:
   postgres-socket:
   odoo-local:
+  odoo-config:
+  ipython:
   x11-socket:
   local:
+  config:
   codex-home:
   codex-workspace:
   podman-broker-socket:
