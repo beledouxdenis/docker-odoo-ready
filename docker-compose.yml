@@ -5,6 +5,8 @@ services:
     volumes:
       - ./containers/squid/files/squid.conf:/etc/squid/squid.conf
       - ./containers/squid/files/whitelist.txt:/etc/squid/whitelist.txt
+      - squid-log:/var/log/squid
+      - squid-cache:/var/spool/squid
     networks:
       - internal
       - internet
@@ -153,6 +155,8 @@ services:
       - danger-full-access
 
 volumes:
+  squid-log:
+  squid-cache:
   postgres-data:
   postgres-socket:
   odoo-local:
