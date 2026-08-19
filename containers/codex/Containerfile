@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV NODE_PATH=/usr/local/lib/node_modules
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends bubblewrap ca-certificates curl git nodejs npm poppler-utils \
+ && apt-get install -y --no-install-recommends bubblewrap ca-certificates curl git nodejs npm pipx poppler-utils \
     postgresql-client procps python3 python3-requests python3-yaml ripgrep unzip vim\
  && npm install -g playwright \
  && playwright install-deps chromium \
@@ -13,5 +13,7 @@ RUN apt-get update \
 
 USER odoo
 RUN playwright install chromium
+RUN pipx ensurepath
+RUN pipx install ruff
 
 RUN curl -A "Mozilla/5.0" -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
