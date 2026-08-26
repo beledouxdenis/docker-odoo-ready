@@ -2,12 +2,30 @@ FROM debian:trixie-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
+ARG KASMVNC_VERSION=1.5.0
+
 RUN apt-get update -y \
     && apt-get install -y --no-install-recommends \
-        novnc \
-        procps \
-        tigervnc-standalone-server \
-    && printf '%s\n' '<!doctype html><meta http-equiv="refresh" content="0; url=/vnc.html?autoconnect=true&path=websockify">' > /usr/share/novnc/index.html \
+        ca-certificates \
+        curl \
+        openbox \
+        x11-utils \
+    && ARCH="$(dpkg --print-architecture)" \
+    && curl --fail --location --show-error \
+        --output /tmp/kasmvncserver.deb \
+        "https://github.com/kasmtech/KasmVNC/releases/download/v${KASMVNC_VERSION}/kasmvncserver_trixie_${KASMVNC_VERSION}_${ARCH}.deb" \
+    && apt-get install -y --no-install-recommends /tmp/kasmvncserver.deb \
+    && apt-get purge -y --auto-remove curl \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-CMD ["/bin/sh", "-c", "Xtigervnc :1 -SecurityTypes None -localhost & exec /usr/share/novnc/utils/novnc_proxy --vnc 127.0.0.1:5901"]
+COPY containers/x11/files/openbox-rc.xml /etc/xdg/openbox/rc.xml
+
+CMD ["/bin/sh", "-c", "Xkasmvnc :1 \
+    -interface 0.0.0.0 \
+    -PublicIP 127.0.0.1 \
+    -websocketPort 6080 \
+    -httpd /usr/share/kasmvnc/www \
+    -sslOnly 0 \
+    -SecurityTypes None \
+    -disableBasicAuth & \
+    while ! DISPLAY=:1 openbox --config-file /etc/xdg/openbox/rc.xml; do sleep 0.1; done"]

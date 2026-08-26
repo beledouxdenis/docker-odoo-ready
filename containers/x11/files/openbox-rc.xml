@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<openbox_config>
+  <applications>
+    <application class="*">
+      <decor>no</decor>
+      <maximized>yes</maximized>
+    </application>
+  </applications>
+</openbox_config>

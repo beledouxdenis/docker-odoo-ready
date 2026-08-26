@@ -148,6 +148,7 @@ services:
       - ${ODOO_SRC:-$HOME/src}/design-themes:${ODOO_SRC:-$HOME/src}/design-themes
       - ${ODOO_SRC:-$HOME/src}/upgrade:${ODOO_SRC:-$HOME/src}/upgrade
       - ${ODOO_SRC:-$HOME/src}/upgrade-util:${ODOO_SRC:-$HOME/src}/upgrade-util
+      - x11-socket:/tmp/.X11-unix
     working_dir: /workspace
     command:
       - /home/odoo/.local/bin/codex
