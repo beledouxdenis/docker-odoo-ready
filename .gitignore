@@ -133,4 +133,4 @@ containers/proxies/.certs/
 
 # Codex
 .codex
-containers/codex/skills/security-review/
+/docker-compose.override.yml

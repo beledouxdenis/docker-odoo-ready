@@ -137,6 +137,7 @@ services:
       - ipython:/home/odoo/.ipython
       - codex-home:/home/odoo/.codex
       - ./containers/codex/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
+      - ./containers/codex/instructions:/home/odoo/.codex/instructions:ro
       - ./containers/codex/skills:/home/odoo/.codex/skills:ro
       - codex-workspace:/workspace
       - ${HOME}/Downloads/codex-documents:/workspace/documents

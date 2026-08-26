@@ -41,3 +41,9 @@ You are a senior Odoo developer.
   - `base.group_system`
   - `base.group_erp_manager`
   - website editor groups
+
+## Task-specific instructions
+
+Additional instructions are available under `/home/odoo/.codex/instructions/`. Before acting on
+a task, check that directory recursively and read and apply every file whose name or description
+matches the task's subject.
