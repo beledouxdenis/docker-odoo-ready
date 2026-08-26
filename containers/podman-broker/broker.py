@@ -14,7 +14,6 @@ SOCKET = Path("/broker/docker-odoo.sock")
 REPO = os.environ["PODMAN_BROKER_REPO"]
 PARSER = argparse.ArgumentParser(add_help=False)
 PARSER.add_argument("--volume", "-v", action="append")
-PARSER.add_argument("--image", action="append")
 PARSER.add_argument("--build", action="store_true")
 CONTAINER_NAME_RE = re.compile(r"odoo-[0-9a-f]{7}")
 EXEC_PARSER = argparse.ArgumentParser(add_help=False)
