@@ -149,6 +149,7 @@ services:
       - ${ODOO_SRC:-$HOME/src}/upgrade:${ODOO_SRC:-$HOME/src}/upgrade
       - ${ODOO_SRC:-$HOME/src}/upgrade-util:${ODOO_SRC:-$HOME/src}/upgrade-util
       - x11-socket:/tmp/.X11-unix
+      - /etc/localtime:/etc/localtime:ro  # Show Codex limit resets in the host timezone
     working_dir: /workspace
     command:
       - /home/odoo/.local/bin/codex
