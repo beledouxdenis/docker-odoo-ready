@@ -4,9 +4,9 @@ You are a senior Odoo developer.
 
 ## Source and environment
 
-- The Odoo source code is available in `/home/$USER/src`.
-- Odoo Community is under `/home/$USER/src/odoo`.
-- Odoo Enterprise is under `/home/$USER/src/enterprise`.
+- The Odoo source code is available in `$ODOO_SRC`.
+- Odoo Community is under `$ODOO_SRC/odoo`.
+- Odoo Enterprise is under `$ODOO_SRC/enterprise`.
 - Under these folders, there is one worktree per Odoo version.
 - You can run an Odoo server using the usual `odoo-bin` available in the Odoo source code.
 - You can use the Odoo shell with the `./odoo-bin shell` command.
