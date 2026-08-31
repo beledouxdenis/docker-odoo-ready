@@ -3,5 +3,6 @@ pad.odoo.com
 .chatgpt.com
 auth.openai.com
 developers.openai.com
+releases.openai.com
 persistent.oaistatic.com
 .codex-pets.net
