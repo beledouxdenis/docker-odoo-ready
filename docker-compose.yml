@@ -153,11 +153,9 @@ services:
       - /etc/localtime:/etc/localtime:ro  # Show Codex limit resets in the host timezone
     working_dir: /workspace
     command:
-      - /home/odoo/.local/bin/codex
-      - --ask-for-approval
-      - never
-      - --sandbox
-      - danger-full-access
+      - /bin/sh
+      - -lc
+      - exec codex --ask-for-approval never --sandbox danger-full-access
 
 volumes:
   squid-log:
