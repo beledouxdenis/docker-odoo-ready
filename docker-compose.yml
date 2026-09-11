@@ -98,6 +98,7 @@ services:
       - ${PODMAN_CONTAINER_SSHKEY:-./containers/podman-broker/podman/empty.key}:/root/.ssh/podman-machine:ro
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo:ro
       - ./docker-compose.yml:${PWD}/docker-compose.yml:ro
+      - ./docker-compose.override.yml:${PWD}/docker-compose.override.yml:ro
       - ./docker-odoo:${PWD}/docker-odoo:ro
       - ./containers:${PWD}/containers:ro
       - podman-broker-socket:/broker
