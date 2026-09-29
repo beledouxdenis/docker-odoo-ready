@@ -41,6 +41,7 @@ services:
     environment:
       - DISPLAY=:1
       - ODOO_SRC=${ODOO_SRC:-$HOME/src}
+      - ODOO_PY_COLORS=1
     env_file:
       # Proxy settings are injected only at runtime.
       # During image builds, pip must bypass the HTTP proxy because PyPI and related
@@ -58,6 +59,18 @@ services:
       - ${ODOO_SRC:-$HOME/src}/upgrade-util:${ODOO_SRC:-$HOME/src}/upgrade-util
       - ./containers/odoo/files/bin/odoo:/usr/local/bin/odoo:ro
       - x11-socket:/tmp/.X11-unix
+    networks:
+      - internal
+
+  nginx:
+    image: docker.io/library/nginx:latest
+    environment:
+      NGINX_ENVSUBST_FILTER: ^ODOO_UPSTREAM_HOST$
+      NGINX_ENVSUBST_OUTPUT_DIR: /etc/nginx
+      ODOO_UPSTREAM_HOST: odoo
+    volumes:
+      - ./containers/nginx/files/nginx.conf.template:/etc/nginx/templates/nginx.conf.template:ro
+      - ./containers/proxies/.certs:/etc/nginx/ssl:ro
     networks:
       - internal
 
@@ -99,7 +112,6 @@ services:
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo:ro
       - ./docker-compose.yml:${PWD}/docker-compose.yml:ro
       - ./docker-compose.override.yml:${PWD}/docker-compose.override.yml:ro
-      - ./docker-odoo:${PWD}/docker-odoo:ro
       - ./containers:${PWD}/containers:ro
       - podman-broker-socket:/broker
 
@@ -120,7 +132,7 @@ services:
       DISPLAY: :1
       CODEX_HOME: /home/odoo/.codex
       ODOO_SRC: ${ODOO_SRC:-$HOME/src}
-      PODMAN_BROKER_SOCKET: /broker/docker-odoo.sock
+      PODMAN_BROKER_SOCKET: /broker/podman-compose.sock
       VISUAL: vim  # To be able to use vim as editor in codex using CTRL + G
       TERM_PROGRAM: $TERM_PROGRAM  # To support codex pets in Ghostty
       TERM_PROGRAM_VERSION: $TERM_PROGRAM_VERSION
@@ -142,7 +154,7 @@ services:
       - codex-workspace:/workspace
       - ${HOME}/Downloads/codex-documents:/workspace/documents
       - podman-broker-socket:/broker
-      - ./containers/podman-broker/docker-odoo-client.py:/usr/local/bin/docker-odoo:ro
+      - ./containers/podman-broker/podman-compose-client.py:/usr/local/bin/podman-compose:ro
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo
       - ${ODOO_SRC:-$HOME/src}/enterprise:${ODOO_SRC:-$HOME/src}/enterprise
       - ${ODOO_SRC:-$HOME/src}/design-themes:${ODOO_SRC:-$HOME/src}/design-themes

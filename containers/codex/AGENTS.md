@@ -16,16 +16,19 @@ You are a senior Odoo developer.
 
 ## Running Odoo containers
 
-- You can spawn Odoo containers through the local `docker-odoo` broker command.
-- Use `docker-odoo` from inside Codex instead of calling `podman`, `podman-compose`, or the Podman socket directly.
+- You can spawn approved containers through the local `podman-compose` broker command.
+- Use the brokered `podman-compose` from inside Codex instead of calling `podman` or the Podman socket directly.
 - To start Odoo 19, run:
-  `docker-odoo -b 19.0`
+  `podman-compose run odoo odoo --branch 19.0`
 - To start Odoo 18, run:
-  `docker-odoo -b 18.0`
-- You may pass normal Odoo arguments through `docker-odoo`, for example:
-  `docker-odoo -b 19.0 -d test_19 --log-level=info`
-- The broker intentionally denies host/container-control options that would let Codex change mounts or images:
-  `--volume`, `-v`, `--image`, and `--build`.
+  `podman-compose run odoo odoo --branch 18.0`
+- You may pass normal Odoo arguments after the `odoo odoo` service/command pair, for example:
+  `podman-compose run odoo odoo --branch 19.0 -d test_19 --log-level=info`
+- The broker selects the Odoo container image automatically from the Odoo version and host architecture. To compare operating-system behavior, override it with `DOCKERFILE=<image>`, for example: `DOCKERFILE=trixie podman-compose run odoo odoo --branch 19.0`.
+- Allowed Odoo image overrides are discovered from the image definitions under `containers/odoo/images`.
+- The broker always enables `--rm` and assigns a unique container name. Caller-supplied names are denied.
+- An nginx run may target a hostname on the internal network with `-e ODOO_UPSTREAM_HOST=<hostname>`.
+- Apart from the allowlisted `DOCKERFILE` override above, the broker denies host/container-control options such as port publication, mounts, alternate images, builds, privileged containers, and alternate compose files.
 - The command runs in the foreground. Stop the Odoo server with Ctrl-C when finished.
 
 ## Test credentials

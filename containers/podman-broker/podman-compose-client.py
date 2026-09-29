@@ -6,8 +6,7 @@ import sys
 import termios
 import tty
 
-
-SOCKET = os.environ.get("PODMAN_BROKER_SOCKET", "/broker/docker-odoo.sock")
+SOCKET = os.environ.get("PODMAN_BROKER_SOCKET", "/broker/podman-compose.sock")
 
 
 def main():
@@ -15,6 +14,7 @@ def main():
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as broker:
         broker.connect(SOCKET)
         broker.sendall(f"{int(bool(old))}\n".encode())
+        broker.sendall(f"{os.environ.get('DOCKERFILE', '')}\n".encode())
         broker.sendall("\0".join(sys.argv[1:]).encode() + b"\n")
         inputs = [broker, sys.stdin.buffer]
         try:

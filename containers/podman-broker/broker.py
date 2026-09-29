@@ -1,50 +1,120 @@
 #!/usr/bin/env python3
 import argparse
+import logging
 import os
+import platform
 import pty
 import re
 import select
 import signal
 import socketserver
 import subprocess
+import uuid
 from pathlib import Path
 
-
-SOCKET = Path("/broker/docker-odoo.sock")
+SOCKET = Path("/broker/podman-compose.sock")
 REPO = os.environ["PODMAN_BROKER_REPO"]
-PARSER = argparse.ArgumentParser(add_help=False)
-PARSER.add_argument("--volume", "-v", action="append")
-PARSER.add_argument("--build", action="store_true")
-CONTAINER_NAME_RE = re.compile(r"odoo-[0-9a-f]{7}")
-EXEC_PARSER = argparse.ArgumentParser(add_help=False)
+ODOO_SRC = Path(os.environ["ODOO_SRC"])
+ODOO_IMAGES_DIR = Path(REPO) / "containers" / "odoo" / "images"
+COMMUNITY = ODOO_SRC / "odoo"
+
+if platform.machine() in {"aarch64", "arm64"}:
+    IMAGES = [(18.0, "trixie"), (14.0, "bookworm"), (6.1, "bionic")]
+else:
+    IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
+
+
+class DeniedCommand(Exception):
+    pass
+
+
+class StrictArgumentParser(argparse.ArgumentParser):
+    def error(self, message):
+        raise DeniedCommand(message)
+
+
+EXEC_PARSER = StrictArgumentParser(add_help=False)
 EXEC_PARSER.add_argument("--detach", action="store_true")
 EXEC_PARSER.add_argument("--env", action="append")
 EXEC_PARSER.add_argument("--user")
 EXEC_PARSER.add_argument("--workdir")
+COMPOSE_RUN_PARSER = StrictArgumentParser(prog="podman-compose run", add_help=False)
+COMPOSE_RUN_PARSER.add_argument("--rm", action="store_true")
+COMPOSE_RUN_PARSER.add_argument("--no-TTY", "-T", action="store_true")
+COMPOSE_RUN_PARSER.add_argument("--env", "-e", action="append", default=[])
+COMPOSE_RUN_PARSER.add_argument("service", choices=("odoo", "nginx"))
+COMPOSE_RUN_PARSER.add_argument("command", nargs=argparse.REMAINDER)
+ODOO_PARSER = StrictArgumentParser(add_help=False)
+ODOO_PARSER.add_argument("--branch", "-b", required=True)
+
+ACTIVE_CONTAINERS = {}
+UPSTREAM_HOST_RE = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9_.-]{0,251}[A-Za-z0-9])?")
+LOGGER = logging.getLogger(__name__)
 
 
-def is_codex_odoo_container(name):
-    return bool(CONTAINER_NAME_RE.fullmatch(name))
-
-
-def is_allowed_exec(argv):
-    if len(argv) < 3 or not is_codex_odoo_container(argv[1]):
-        return False
-    try:
+def prepare_command(argv, requested_image=None):
+    if not argv:
+        raise DeniedCommand
+    if argv[0] == "exec":
+        if requested_image or len(argv) < 3 or ACTIVE_CONTAINERS.get(argv[1]) != "odoo":
+            raise DeniedCommand
         _, command = EXEC_PARSER.parse_known_args(argv[2:])
-    except SystemExit:
-        return False
-    return bool(command) and not command[0].startswith("-")
+        if not command or command[0].startswith("-"):
+            raise DeniedCommand
+        return ["podman", *argv], None, None, False, None
+    if argv[0] == "inspect":
+        if requested_image or len(argv) != 2 or argv[1] not in ACTIVE_CONTAINERS:
+            raise DeniedCommand
+        return ["podman", *argv], None, None, False, None
+    if argv[0] != "run":
+        raise DeniedCommand
 
-
-def is_allowed_inspect(argv):
-    return len(argv) == 2 and is_codex_odoo_container(argv[1])
-
-
-PODMAN_COMMANDS = {
-    "exec": is_allowed_exec,
-    "inspect": is_allowed_inspect,
-}
+    args = COMPOSE_RUN_PARSER.parse_args(argv[1:])
+    environment = None
+    if args.service == "odoo":
+        if args.env or not args.command or args.command[0] != "odoo":
+            raise DeniedCommand
+        odoo_args, _extra_args = ODOO_PARSER.parse_known_args(args.command[1:])
+        branch_path = (COMMUNITY / odoo_args.branch).resolve()
+        if not branch_path.is_relative_to(COMMUNITY.resolve()) or not branch_path.is_dir():
+            raise DeniedCommand
+        available_images = {containerfile.parent.name for containerfile in ODOO_IMAGES_DIR.glob("*/Containerfile")}
+        if requested_image and requested_image not in available_images:
+            raise DeniedCommand
+        if requested_image:
+            docker_file = requested_image
+        else:
+            odoo_path = COMMUNITY / odoo_args.branch
+            odoo_release_file = next(
+                path / "release.py"
+                for path in [odoo_path / "odoo", odoo_path / "openerp"]
+                if path.exists()
+            )
+            odoo_version = re.search(r"version_info = \((.*)\)", odoo_release_file.read_text())
+            odoo_version = float(
+                ".".join(re.findall(r"\d+", "".join(odoo_version.groups()[0].split(",")[:2])))
+            )
+            docker_file = next(image for version, image in IMAGES if odoo_version >= version)
+        environment = {"DOCKERFILE": docker_file}
+    else:
+        if requested_image:
+            raise DeniedCommand
+        if args.command or len(args.env) > 1:
+            raise DeniedCommand
+        if args.env:
+            variable, separator, target = args.env[0].partition("=")
+            if (
+                separator != "="
+                or variable != "ODOO_UPSTREAM_HOST"
+                or UPSTREAM_HOST_RE.fullmatch(target) is None
+            ):
+                raise DeniedCommand
+    normalized = list(argv)
+    if not args.rm:
+        normalized.insert(1, "--rm")
+    container_name = f"broker-{args.service}-{uuid.uuid4().hex}"
+    normalized[1:1] = ["--name", container_name]
+    return ["podman-compose", *normalized], args.service, container_name, True, environment
 
 
 class Handler(socketserver.BaseRequestHandler):
@@ -59,24 +129,38 @@ class Handler(socketserver.BaseRequestHandler):
 
     def handle(self):
         stdin_is_tty = self._read_line() == "1"
+        requested_image = self._read_line() or None
         argv = self._read_line().split("\0")
-        if argv and argv[0] in PODMAN_COMMANDS:
-            if PODMAN_COMMANDS[argv[0]](argv):
-                process = subprocess.run(["podman", *argv], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-                self.request.sendall(process.stdout)
-            else:
-                self.request.sendall(f"denied docker-odoo {' '.join(argv)}\n".encode())
+        try:
+            command, service, container_name, stream, environment = prepare_command(argv, requested_image)
+        except DeniedCommand:
+            self.request.sendall(f"denied podman-compose {' '.join(argv)}\n".encode())
             return
-        if any(vars(PARSER.parse_known_args(argv)[0]).values()):
-            self.request.sendall(f"denied docker-odoo {' '.join(argv)}\n".encode())
-            return
-        self.run(argv, stdin_is_tty=stdin_is_tty)
+        self.run(
+            command,
+            service=service,
+            container_name=container_name,
+            stdin_is_tty=stdin_is_tty,
+            stream=stream,
+            environment=environment,
+        )
 
-    def run(self, argv, stdin_is_tty):
+    def run(self, command, service, container_name, stdin_is_tty, stream, environment):
+        if not stream:
+            process = subprocess.run(
+                command,
+                cwd=REPO,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                check=False,
+            )
+            self.request.sendall(process.stdout)
+            return
         master, slave = pty.openpty() if stdin_is_tty else (None, None)
         process = subprocess.Popen(
-            ["./docker-odoo", "--internal-url", *argv],
+            command,
             cwd=REPO,
+            env=dict(os.environ, **environment) if environment else None,
             stdin=slave if stdin_is_tty else subprocess.PIPE,
             stdout=slave if stdin_is_tty else subprocess.PIPE,
             stderr=slave if stdin_is_tty else subprocess.STDOUT,
@@ -85,19 +169,24 @@ class Handler(socketserver.BaseRequestHandler):
         if stdin_is_tty:
             os.close(slave)
         try:
+            if container_name:
+                ACTIVE_CONTAINERS[container_name] = service
+                self.request.sendall(f"broker container name: {container_name}\n".encode())
             output = master if stdin_is_tty else process.stdout.fileno()
             stdin_open = True
-            while process.poll() is None:
-                for ready in select.select([self.request, output], [], [])[0]:
+            readers = [self.request, output]
+            while output in readers:
+                for ready in select.select(readers, [], [])[0]:
                     if ready is self.request:
                         data = self.request.recv(65536)
                         if not data:
                             if stdin_is_tty:
                                 process.terminate()
                                 return
-                            elif stdin_open:
+                            if stdin_open:
                                 process.stdin.close()
                                 stdin_open = False
+                            readers.remove(self.request)
                             continue
                         if stdin_is_tty:
                             os.write(master, data)
@@ -110,9 +199,12 @@ class Handler(socketserver.BaseRequestHandler):
                         except OSError:
                             return
                         if not data:
-                            return
+                            readers.remove(output)
+                            continue
                         self.request.sendall(data)
         finally:
+            if container_name:
+                ACTIVE_CONTAINERS.pop(container_name, None)
             if process.poll() is None:
                 os.killpg(process.pid, signal.SIGINT)
                 process.wait(timeout=15)
@@ -121,9 +213,10 @@ class Handler(socketserver.BaseRequestHandler):
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
     SOCKET.parent.mkdir(parents=True, exist_ok=True)
     SOCKET.unlink(missing_ok=True)
     with socketserver.ThreadingUnixStreamServer(str(SOCKET), Handler) as server:
         SOCKET.chmod(0o666)
-        print(f"docker-odoo broker listening on {SOCKET}; repo: {REPO}", flush=True)
+        LOGGER.info("podman-compose broker listening on %s; repo: %s", SOCKET, REPO)
         server.serve_forever()

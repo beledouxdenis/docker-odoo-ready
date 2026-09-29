@@ -55,13 +55,24 @@ odoo shell -b 19.0 -d 19.0
 
 ### Run codex
 
-Codex can spawn odoo containers as he wishes.
-To restrict what codex can spawn and to not forward the podman socket entirely,
-the `podman-broker` container is meant to filter and restrict what codex can spawn on podman.
+Codex can spawn approved compose services through a constrained `podman-compose`
+client. To avoid forwarding the Podman socket, the `podman-broker` parses each
+request and invokes the real `podman-compose` itself.
+
+The broker accepts `podman-compose run` for the `odoo` and `nginx` services,
+`inspect` for active broker-managed containers, and `exec` for active Odoo
+containers. It forces `--rm`, assigns a unique container name, and validates
+the service command. Caller-provided names, port publication, mounts,
+arbitrary images or compose files, builds, privileged options, unknown flags,
+and environment changes other than the documented overrides are rejected.
+The sole `podman-compose run -e` override is
+`ODOO_UPSTREAM_HOST=<hostname>` for the `nginx` service, allowing each proxy to
+target a specific container on the internal network. The hostname is
+syntax-validated before being substituted into the nginx configuration.
 This is to avoid for instance he would be able to escape its container by mounting a volume
 from the host to the container and change host files from within the container.
 
-For this, the `podman-broker` needs to be able to communicate with the host podman.
+For this, the `podman-broker` needs to be able to communicate with the host Podman.
 On Linux, it's done by enabling the podman socket
 On Macos, it's done by using the default SSH connection given by `podman machine init`.
 
@@ -84,6 +95,28 @@ podman-compose run --rm codex
 podman-compose run --rm -v path/to/host/folder:path/in/container codex
 # To run a shell
 podman-compose run --rm codex /bin/bash
+```
+
+Inside the Codex container, an Odoo server can be started with:
+
+```sh
+podman-compose run odoo odoo --branch 19.0 -d test_19
+```
+
+The broker injects `--rm`, generates and prints a unique container name, and
+keeps the name registered while the command is running for subsequent approved
+`inspect` or Odoo `exec` operations. With one Odoo run, Codex can reach it at
+`http://odoo:8069` through the Compose service alias. When several Odoo runs
+are active, use a specific internal hostname instead of the shared `odoo`
+alias. The broker does not permit publishing container ports on the host.
+
+For Odoo runs, the broker selects the image automatically from the Odoo version
+and host architecture, using the same policy as `docker-odoo`. Codex can choose
+an allowed image explicitly when comparing operating-system behavior:
+
+```sh
+DOCKERFILE=trixie podman-compose run odoo odoo --branch 19.0
+DOCKERFILE=noble podman-compose run odoo odoo --branch 19.0
 ```
 
 ### Incoming test mail server, to test mails outgoing from odoo
