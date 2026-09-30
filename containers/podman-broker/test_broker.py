@@ -2,7 +2,6 @@ import importlib.util
 import os
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
 os.environ.setdefault("PODMAN_BROKER_REPO", str(Path(__file__).parents[2]))
 spec = importlib.util.spec_from_file_location("broker", Path(__file__).with_name("broker.py"))
@@ -36,7 +35,7 @@ class ComposeCommandTest(unittest.TestCase):
         self.assertTrue(container_name.startswith("broker-odoo-"))
         self.assertEqual(service, "odoo")
         self.assertTrue(stream)
-        self.assertIn(environment["DOCKERFILE"], {"noble", "trixie"})
+        self.assertEqual(environment["DOCKERFILE"], "noble")
 
     def test_explicit_rm_is_not_duplicated(self):
         command, service, _container_name, _stream, _environment = broker.prepare_command([
@@ -115,15 +114,10 @@ class ComposeCommandTest(unittest.TestCase):
             command, _service, _container_name, _stream, _environment = broker.prepare_command(argv)
             self.assertIn(command[0], {"podman", "podman-compose"})
 
-    def test_odoo_image_is_selected_from_version_and_architecture(self):
-        with patch.object(broker, "IMAGES", [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]):
-            for branch, image in (("19.0", "noble"), ("17.0", "jammy"), ("13.0", "bionic")):
-                environment = broker.prepare_command(["run", "odoo", "odoo", "--branch", branch])[4]
-                self.assertEqual(environment["DOCKERFILE"], image)
-        with patch.object(broker, "IMAGES", [(18.0, "trixie"), (14.0, "bookworm"), (6.1, "bionic")]):
-            for branch, image in (("19.0", "trixie"), ("17.0", "bookworm")):
-                environment = broker.prepare_command(["run", "odoo", "odoo", "--branch", branch])[4]
-                self.assertEqual(environment["DOCKERFILE"], image)
+    def test_odoo_image_is_selected_from_version(self):
+        for branch, image in (("19.0", "noble"), ("17.0", "jammy"), ("13.0", "bionic")):
+            environment = broker.prepare_command(["run", "odoo", "odoo", "--branch", branch])[4]
+            self.assertEqual(environment["DOCKERFILE"], image)
 
     def test_odoo_image_may_be_overridden(self):
         _command, _service, _name, _stream, environment = broker.prepare_command(

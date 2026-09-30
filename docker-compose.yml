@@ -31,8 +31,8 @@ services:
   odoo:
     build:
       context: .
-      dockerfile: "containers/odoo/images/${DOCKERFILE:-trixie}/Containerfile"
-    image: "localhost/odoo:${DOCKERFILE:-trixie}"
+      dockerfile: "containers/odoo/images/${DOCKERFILE:-noble}/Containerfile"
+    image: "localhost/odoo:${DOCKERFILE:-noble}"
     depends_on:
       - postgres
       - squid
@@ -50,7 +50,7 @@ services:
     volumes:
       - postgres-socket:/var/run/postgresql:ro
       - odoo-local:/home/odoo/.local
-      - odoo-config:/home/odoo/.config
+      - pudb:/home/odoo/.config/pudb
       - ipython:/home/odoo/.ipython
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo
       - ${ODOO_SRC:-$HOME/src}/enterprise:${ODOO_SRC:-$HOME/src}/enterprise
@@ -174,7 +174,7 @@ volumes:
   postgres-data:
   postgres-socket:
   odoo-local:
-  odoo-config:
+  pudb:
   ipython:
   x11-socket:
   local:

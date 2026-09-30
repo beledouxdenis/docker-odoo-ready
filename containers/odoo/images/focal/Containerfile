@@ -11,10 +11,8 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     && wget -q --show-progres --progress=bar:force:noscroll -O wkhtmltox.deb \
     https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.focal_${PLATFORM}.deb \
     # Fetch Google Chrome (for web tour tests)
-    && if [ "$PLATFORM" = "amd64" ]; then \
-        wget -q --show-progress --progress=bar:force:noscroll -O chrome.deb \
-        https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_145.0.7632.116-1_amd64.deb; \
-    fi \
+    && wget -q --show-progress --progress=bar:force:noscroll -O chrome.deb \
+    https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_150.0.7871.128-1_${PLATFORM}.deb \
     # Continue install after fetching debs
     && apt-get update -y \
     && apt-get install -y --no-install-recommends \
@@ -66,4 +64,5 @@ ENV PATH="/venv/bin:$PATH"
 RUN printf '%s\n' 'export PATH="/venv/bin:$PATH"' >> /etc/profile
 
 # Create a user to not run odoo with the root user
-RUN useradd -m -s /bin/bash odoo
+RUN useradd -m -s /bin/bash odoo \
+    && install -d -o odoo -g odoo /home/odoo/.config

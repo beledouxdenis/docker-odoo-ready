@@ -24,7 +24,7 @@ You are a senior Odoo developer.
   `podman-compose run odoo odoo --branch 18.0`
 - You may pass normal Odoo arguments after the `odoo odoo` service/command pair, for example:
   `podman-compose run odoo odoo --branch 19.0 -d test_19 --log-level=info`
-- The broker selects the Odoo container image automatically from the Odoo version and host architecture. To compare operating-system behavior, override it with `DOCKERFILE=<image>`, for example: `DOCKERFILE=trixie podman-compose run odoo odoo --branch 19.0`.
+- The broker selects the Odoo container image automatically from the Odoo version. To compare operating-system behavior, override it with `DOCKERFILE=<image>`, for example: `DOCKERFILE=trixie podman-compose run odoo odoo --branch 19.0`.
 - Allowed Odoo image overrides are discovered from the image definitions under `containers/odoo/images`.
 - The broker always enables `--rm` and assigns a unique container name. Caller-supplied names are denied.
 - An nginx run may target a hostname on the internal network with `-e ODOO_UPSTREAM_HOST=<hostname>`.

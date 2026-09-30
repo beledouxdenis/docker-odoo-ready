@@ -2,7 +2,6 @@
 import argparse
 import logging
 import os
-import platform
 import pty
 import re
 import select
@@ -18,10 +17,7 @@ ODOO_SRC = Path(os.environ["ODOO_SRC"])
 ODOO_IMAGES_DIR = Path(REPO) / "containers" / "odoo" / "images"
 COMMUNITY = ODOO_SRC / "odoo"
 
-if platform.machine() in {"aarch64", "arm64"}:
-    IMAGES = [(18.0, "trixie"), (14.0, "bookworm"), (6.1, "bionic")]
-else:
-    IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
+IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
 
 
 class DeniedCommand(Exception):
