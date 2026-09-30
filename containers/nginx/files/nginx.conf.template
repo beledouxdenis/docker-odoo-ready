@@ -1,6 +1,21 @@
 events {}
 
 http {
+    map $cookie_session_id $session_fingerprint {
+        "~^(?<fingerprint>.{8})" $fingerprint;
+        default "-";
+    }
+
+    log_format main '$remote_addr $time_iso8601 "$request" '
+                    '$status $body_bytes_sent "$http_referer" '
+                    '"$http_host" '
+                    '"$http_user_agent" '
+                    '$ssl_protocol '
+                    '$session_fingerprint '
+                    '"$http_x_forwarded_for" '
+                    '$request_time ';
+    access_log /var/log/nginx/access.log main;
+
     proxy_set_header Host $http_host;
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-Host $host;
