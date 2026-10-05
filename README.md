@@ -2,22 +2,24 @@
 
 ```sh
 src=~/src
-repositories="odoo enterprise design-themes"
-branches="7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 saas-19.1 saas-19.2 saas-19.3 saas-19.4 20.0"
-upgrade_repositories="upgrade-util upgrade"
+repositories=(odoo enterprise design-themes)
+branches=(7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0 16.0 17.0 18.0 19.0 saas-19.1 saas-19.2 saas-19.3 saas-19.4 20.0)
+upgrade_repositories=(upgrade-util upgrade)
 
 # Create the source folder
-mkdir $src
+mkdir -p "$src"
 
 # Clone Odoo repositories
-for r in $repositories; do mkdir $src/$r && cd $src/$r && git clone git@github.com:odoo/$r.git master && cd master && git switch master; done
+for r in "${repositories[@]}"; do mkdir -p "$src/$r" && git clone --branch master "git@github.com:odoo/$r.git" "$src/$r/master"; done
+
 # Rename remote origin to odoo, add remote odoo-dev, for all repositories
-for r in $repositories; do git -C $src/$r/master remote rename origin odoo && git -C $src/$r/master remote add odoo-dev git@github.com:odoo-dev/$r.git;  done
+for r in "${repositories[@]}"; do git -C "$src/$r/master" remote rename origin odoo && git -C "$src/$r/master" remote add odoo-dev "git@github.com:odoo-dev/$r.git"; done
+
 # Add a worktree for all branches for all repositories
-for b in $branches; do for r in $repositories; do git -C $src/$r/master worktree add ../$b $b; done; done
+for b in "${branches[@]}"; do for r in "${repositories[@]}"; do git -C "$src/$r/master" worktree add "$src/$r/$b" "$b"; done; done
 
 # Clone Odoo Upgrade repositories
-for r in $upgrade_repositories; do cd $src && git clone git@github.com:odoo/$r.git; done
+for r in "${upgrade_repositories[@]}"; do git clone "git@github.com:odoo/$r.git" "$src/$r"; done
 ```
 
 ### Setup this tool
