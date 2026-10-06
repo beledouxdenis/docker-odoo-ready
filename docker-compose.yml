@@ -1,12 +1,11 @@
 services:
-  squid:
-    container_name: squid
-    image: docker.io/ubuntu/squid:latest
+  gost:
+    container_name: gost
+    image: docker.io/gogost/gost:3.3.0
+    command: -C /etc/gost/gost.yml
     volumes:
-      - ./containers/squid/files/squid.conf:/etc/squid/squid.conf
-      - ./containers/squid/files/whitelist.txt:/etc/squid/whitelist.txt
-      - squid-log:/var/log/squid
-      - squid-cache:/var/spool/squid
+      - ./containers/gost/files/gost.yml:/etc/gost/gost.yml:ro
+      - ./containers/gost/files/whitelist.txt:/etc/gost/whitelist.txt:ro
     networks:
       - internal
       - internet
@@ -35,7 +34,7 @@ services:
     image: "localhost/odoo:${DOCKERFILE:-noble}"
     depends_on:
       - postgres
-      - squid
+      - gost
     userns_mode: "keep-id:uid=1000,gid=1000"
     user: odoo
     environment:
@@ -123,7 +122,7 @@ services:
     depends_on:
       - podman-broker
       - postgres
-      - squid
+      - gost
     networks:
       - internal
     userns_mode: "keep-id:uid=1000,gid=1000"
@@ -169,8 +168,6 @@ services:
       - exec codex --ask-for-approval never --sandbox danger-full-access
 
 volumes:
-  squid-log:
-  squid-cache:
   postgres-data:
   postgres-socket:
   odoo-local:

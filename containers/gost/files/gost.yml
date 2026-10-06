@@ -1,0 +1,14 @@
+services:
+  - name: egress-proxy
+    addr: ":3128"
+    bypass: egress-whitelist
+    handler:
+      type: http
+    listener:
+      type: tcp
+
+bypasses:
+  - name: egress-whitelist
+    whitelist: true
+    file:
+      path: /etc/gost/whitelist.txt

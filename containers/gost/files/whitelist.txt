@@ -1,0 +1,10 @@
+ocn.odoo.com:443
+pad.odoo.com:443
+.chatgpt.com:443
+api.openai.com:443
+auth.openai.com:443
+developers.openai.com:443
+releases.openai.com:443
+persistent.oaistatic.com:443
+.codex-pets.net:443
+runbot*.odoo.com:443
