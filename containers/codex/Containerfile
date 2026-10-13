@@ -1,4 +1,4 @@
-FROM debian:trixie
+FROM ubuntu:resolute
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TERM=xterm-256color
@@ -7,15 +7,20 @@ ENV LESS=-R
 ENV NODE_PATH=/usr/local/lib/node_modules
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends bubblewrap ca-certificates curl less git nodejs npm pipx poppler-utils \
+ && apt-get install -y --no-install-recommends ca-certificates curl \
+ && curl -fsSL https://dl.google.com/linux/linux_signing_key.pub -o /etc/apt/keyrings/google-chrome.asc \
+ && echo "deb [signed-by=/etc/apt/keyrings/google-chrome.asc] https://dl.google.com/linux/chrome/deb/ stable main" \
+    > /etc/apt/sources.list.d/google-chrome.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends bubblewrap git google-chrome-stable less nodejs npm pipx poppler-utils \
     postgresql-client procps python3 python3-requests python3-yaml ripgrep rsync sqlite3 unzip vim \
  && npm install -g playwright \
- && playwright install-deps chromium \
  && rm -rf /var/lib/apt/lists/* \
- && useradd --create-home odoo
+ && userdel ubuntu \
+ && useradd --create-home odoo \
+ && install -d -o odoo -g odoo /home/odoo/.config
 
 USER odoo
-RUN playwright install chromium
 RUN pipx ensurepath
 RUN pipx install ruff
 RUN pipx install semgrep

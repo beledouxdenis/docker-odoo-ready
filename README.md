@@ -99,6 +99,10 @@ podman-compose run --rm -v path/to/host/folder:path/in/container codex
 podman-compose run --rm codex /bin/bash
 ```
 
+The Codex image includes Google Chrome. Launch Playwright with
+`channel: "chrome"`. Browser configuration is local to each Codex container so
+multiple containers can run Chrome concurrently.
+
 Inside the Codex container, an Odoo server can be started with:
 
 ```sh

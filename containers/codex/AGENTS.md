@@ -12,7 +12,9 @@ You are a senior Odoo developer.
 - You can use the Odoo shell with the `./odoo-bin shell` command.
 - You do not have only Odoo 19; other versions such as 16, 17, and 18 are available.
 - You can list the different versions using the source folders mentioned above.
-- For live browser reproduction, use the installed Playwright with Chromium.
+- For live browser reproduction, use the installed Playwright with Google Chrome
+  (`channel: "chrome"`). Browser profiles are intentionally not shared between
+  Codex containers, allowing multiple Chrome instances to run concurrently.
 
 ## Running Odoo containers
 

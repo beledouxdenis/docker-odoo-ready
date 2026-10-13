@@ -144,7 +144,7 @@ services:
     volumes:
       - postgres-socket:/var/run/postgresql:ro
       - local:/home/odoo/.local
-      - config:/home/odoo/.config
+      - pudb:/home/odoo/.config/pudb
       - ipython:/home/odoo/.ipython
       - codex-home:/home/odoo/.codex
       - ./containers/codex/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
@@ -175,7 +175,6 @@ volumes:
   ipython:
   x11-socket:
   local:
-  config:
   codex-home:
   codex-workspace:
   podman-broker-socket:
