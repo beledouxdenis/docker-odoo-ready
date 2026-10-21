@@ -12,6 +12,7 @@ spec.loader.exec_module(broker)
 class ComposeCommandTest(unittest.TestCase):
     def setUp(self):
         broker.ACTIVE_CONTAINERS.clear()
+        broker.ALLOWED_SERVICES = {"odoo", "nginx"}
 
     def assert_allowed(self, *argv):
         return broker.prepare_command(list(argv))
@@ -66,6 +67,20 @@ class ComposeCommandTest(unittest.TestCase):
         self.assert_denied("run", "-e", "ODOO_UPSTREAM_HOST=odoo;return 200", "nginx")
         self.assert_denied("run", "-e", "OTHER_VARIABLE=value", "nginx")
 
+    def test_configured_service_is_allowed(self):
+        broker.ALLOWED_SERVICES.add("builder")
+
+        command, service, container_name, stream, environment = self.assert_allowed(
+            "run", "builder", "sh",
+        )
+        self.assertEqual(service, "builder")
+        self.assertTrue(container_name.startswith("broker-builder-"))
+        self.assertTrue(stream)
+        self.assertIsNone(environment)
+        self.assertIn("sh", command)
+        self.assert_allowed("run", "builder")
+        self.assert_allowed("run", "-e", "VALUE=custom", "builder", "./build")
+
     def test_rejects_unapproved_compose_operations(self):
         self.assert_denied("up", "-d")
         self.assert_denied("run", "--rm", "--name", "odoo-a1b2c3d", "--build", "odoo", "odoo")
@@ -101,8 +116,7 @@ class ComposeCommandTest(unittest.TestCase):
         broker.prepare_command(["exec", "generated-name", "id"])
         broker.ACTIVE_CONTAINERS["proxy-name"] = "nginx"
         broker.prepare_command(["inspect", "proxy-name"])
-        with self.assertRaises(broker.DeniedCommand):
-            broker.prepare_command(["exec", "proxy-name", "id"])
+        broker.prepare_command(["exec", "proxy-name", "id"])
 
     def test_all_allowed_commands_are_prepared_by_dispatcher(self):
         broker.ACTIVE_CONTAINERS["generated-name"] = "odoo"

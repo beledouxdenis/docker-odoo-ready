@@ -18,6 +18,11 @@ ODOO_IMAGES_DIR = Path(REPO) / "containers" / "odoo" / "images"
 COMMUNITY = ODOO_SRC / "odoo"
 
 IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
+ALLOWED_SERVICES = {"odoo", "nginx"} | {
+    service.strip()
+    for service in os.environ.get("PODMAN_BROKER_SERVICES", "").split(",")
+    if service.strip()
+}
 
 
 class DeniedCommand(Exception):
@@ -38,7 +43,7 @@ COMPOSE_RUN_PARSER = StrictArgumentParser(prog="podman-compose run", add_help=Fa
 COMPOSE_RUN_PARSER.add_argument("--rm", action="store_true")
 COMPOSE_RUN_PARSER.add_argument("--no-TTY", "-T", action="store_true")
 COMPOSE_RUN_PARSER.add_argument("--env", "-e", action="append", default=[])
-COMPOSE_RUN_PARSER.add_argument("service", choices=("odoo", "nginx"))
+COMPOSE_RUN_PARSER.add_argument("service")
 COMPOSE_RUN_PARSER.add_argument("command", nargs=argparse.REMAINDER)
 ODOO_PARSER = StrictArgumentParser(add_help=False)
 ODOO_PARSER.add_argument("--branch", "-b", required=True)
@@ -52,20 +57,22 @@ def prepare_command(argv, requested_image=None):
     if not argv:
         raise DeniedCommand
     if argv[0] == "exec":
-        if requested_image or len(argv) < 3 or ACTIVE_CONTAINERS.get(argv[1]) != "odoo":
+        if len(argv) < 3 or argv[1] not in ACTIVE_CONTAINERS:
             raise DeniedCommand
         _, command = EXEC_PARSER.parse_known_args(argv[2:])
         if not command or command[0].startswith("-"):
             raise DeniedCommand
         return ["podman", *argv], None, None, False, None
     if argv[0] == "inspect":
-        if requested_image or len(argv) != 2 or argv[1] not in ACTIVE_CONTAINERS:
+        if len(argv) != 2 or argv[1] not in ACTIVE_CONTAINERS:
             raise DeniedCommand
         return ["podman", *argv], None, None, False, None
     if argv[0] != "run":
         raise DeniedCommand
 
     args = COMPOSE_RUN_PARSER.parse_args(argv[1:])
+    if args.service not in ALLOWED_SERVICES:
+        raise DeniedCommand
     environment = None
     if args.service == "odoo":
         if args.env or not args.command or args.command[0] != "odoo":
@@ -92,9 +99,7 @@ def prepare_command(argv, requested_image=None):
             )
             docker_file = next(image for version, image in IMAGES if odoo_version >= version)
         environment = {"DOCKERFILE": docker_file}
-    else:
-        if requested_image:
-            raise DeniedCommand
+    elif args.service == "nginx":
         if args.command or len(args.env) > 1:
             raise DeniedCommand
         if args.env:
