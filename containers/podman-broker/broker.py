@@ -53,7 +53,7 @@ UPSTREAM_HOST_RE = re.compile(r"[A-Za-z0-9](?:[A-Za-z0-9_.-]{0,251}[A-Za-z0-9])?
 LOGGER = logging.getLogger(__name__)
 
 
-def prepare_command(argv, requested_image=None):
+def prepare_command(argv, requested_image=None, stdin_is_tty=True):
     if not argv:
         raise DeniedCommand
     if argv[0] == "exec":
@@ -113,6 +113,8 @@ def prepare_command(argv, requested_image=None):
     normalized = list(argv)
     if not args.rm:
         normalized.insert(1, "--rm")
+    if not stdin_is_tty and not args.no_TTY:
+        normalized.insert(1, "-T")
     container_name = f"broker-{args.service}-{uuid.uuid4().hex}"
     normalized[1:1] = ["--name", container_name]
     return ["podman-compose", *normalized], args.service, container_name, True, environment
@@ -133,7 +135,9 @@ class Handler(socketserver.BaseRequestHandler):
         requested_image = self._read_line() or None
         argv = self._read_line().split("\0")
         try:
-            command, service, container_name, stream, environment = prepare_command(argv, requested_image)
+            command, service, container_name, stream, environment = prepare_command(
+                argv, requested_image, stdin_is_tty
+            )
         except DeniedCommand:
             self.request.sendall(f"denied podman-compose {' '.join(argv)}\n".encode())
             return

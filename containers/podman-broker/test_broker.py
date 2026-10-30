@@ -46,6 +46,19 @@ class ComposeCommandTest(unittest.TestCase):
         self.assertEqual(command.count("--name"), 1)
         self.assertEqual(service, "odoo")
 
+    def test_no_tty_is_injected_for_non_tty_clients(self):
+        command = broker.prepare_command(
+            ["run", "odoo", "odoo", "--branch", "19.0"],
+            stdin_is_tty=False,
+        )[0]
+        self.assertEqual(command.count("-T"), 1)
+
+        command = broker.prepare_command(
+            ["run", "-T", "odoo", "odoo", "--branch", "19.0"],
+            stdin_is_tty=False,
+        )[0]
+        self.assertEqual(command.count("-T"), 1)
+
     def test_caller_supplied_name_is_rejected(self):
         self.assert_denied("run", "--name", "caller-name", "odoo", "odoo")
 
