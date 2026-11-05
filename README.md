@@ -61,12 +61,20 @@ Codex can spawn approved compose services through a constrained `podman-compose`
 client. To avoid forwarding the Podman socket, the `podman-broker` parses each
 request and invokes the real `podman-compose` itself.
 
-The broker accepts `podman-compose run` for the `odoo` and `nginx` services,
-`inspect` for active broker-managed containers, and `exec` for active Odoo
-containers. It forces `--rm`, assigns a unique container name, and validates
-the service command. Caller-provided names, port publication, mounts,
-arbitrary images or compose files, builds, privileged options, unknown flags,
-and environment changes other than the documented overrides are rejected.
+The broker accepts `podman-compose run` for services listed in
+`PODMAN_BROKER_SERVICES`, and `inspect` or `exec` for active broker-managed
+containers. `PODMAN_BROKER_COMPOSE_FILES` selects the Compose definitions used
+by the broker, using `:` as separator. This lets additional Compose files
+define services such as an Android builder without granting access to every
+service they contain.
+
+The user-facing `compose.yml` remains the default used automatically by
+`podman-compose`, including by `docker-odoo`. By default, the broker uses this
+file and allows only the `odoo` service.
+
+It forces `--rm`, assigns a unique container name, and validates the service
+command. Caller-provided names, port publication, mounts, arbitrary images or
+compose files, builds, privileged options, and unknown flags are rejected.
 The sole `podman-compose run -e` override is
 `ODOO_UPSTREAM_HOST=<hostname>` for the `nginx` service, allowing each proxy to
 target a specific container on the internal network. The hostname is

@@ -104,13 +104,14 @@ services:
       CONTAINER_HOST: ${PODMAN_CONTAINER_HOST:-unix:///run/podman/podman.sock}
       CONTAINER_SSHKEY: /root/.ssh/podman-machine
       ODOO_SRC: ${ODOO_SRC:-$HOME/src}
+      PODMAN_BROKER_COMPOSE_FILES: ${PWD}/compose.yml
+      PODMAN_BROKER_SERVICES: odoo
       PODMAN_BROKER_REPO: ${PWD}
     volumes:
       - ${XDG_RUNTIME_DIR:-./containers/podman-broker/}/podman/podman.sock:/run/podman/podman.sock:ro
       - ${PODMAN_CONTAINER_SSHKEY:-./containers/podman-broker/podman/empty.key}:/root/.ssh/podman-machine:ro
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo:ro
-      - ./docker-compose.yml:${PWD}/docker-compose.yml:ro
-      - ./docker-compose.override.yml:${PWD}/docker-compose.override.yml:ro
+      - ./compose.yml:${PWD}/compose.yml:ro
       - ./containers:${PWD}/containers:ro
       - podman-broker-socket:/broker
 

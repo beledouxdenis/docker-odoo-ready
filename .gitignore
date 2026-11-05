@@ -133,4 +133,4 @@ containers/proxies/.certs/
 
 # Codex
 .codex
-/docker-compose.override.yml
+/compose.override.yml

@@ -4,15 +4,21 @@ import unittest
 from pathlib import Path
 
 os.environ.setdefault("PODMAN_BROKER_REPO", str(Path(__file__).parents[2]))
+os.environ.setdefault(
+    "PODMAN_BROKER_COMPOSE_FILES",
+    str(Path(__file__).parents[2] / "compose.yml"),
+)
+os.environ.setdefault("PODMAN_BROKER_SERVICES", "odoo")
 spec = importlib.util.spec_from_file_location("broker", Path(__file__).with_name("broker.py"))
 broker = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(broker)
+CONFIGURED_SERVICES = broker.ALLOWED_SERVICES.copy()
 
 
 class ComposeCommandTest(unittest.TestCase):
     def setUp(self):
         broker.ACTIVE_CONTAINERS.clear()
-        broker.ALLOWED_SERVICES = {"odoo", "nginx"}
+        broker.ALLOWED_SERVICES = CONFIGURED_SERVICES.copy()
 
     def assert_allowed(self, *argv):
         return broker.prepare_command(list(argv))
@@ -63,11 +69,13 @@ class ComposeCommandTest(unittest.TestCase):
         self.assert_denied("run", "--name", "caller-name", "odoo", "odoo")
 
     def test_nginx_run(self):
+        broker.ALLOWED_SERVICES.add("nginx")
         self.assert_allowed(
             "run", "--rm", "nginx",
         )
 
     def test_nginx_may_target_an_internal_hostname(self):
+        broker.ALLOWED_SERVICES.add("nginx")
         command, service, _container_name, _stream, _environment = broker.prepare_command([
             "run", "-e", "ODOO_UPSTREAM_HOST=odoo.internal", "nginx",
         ])
@@ -75,6 +83,7 @@ class ComposeCommandTest(unittest.TestCase):
         self.assertEqual(service, "nginx")
 
     def test_nginx_rejects_unsafe_upstream_values(self):
+        broker.ALLOWED_SERVICES.add("nginx")
         self.assert_denied("run", "-e", "ODOO_UPSTREAM_HOST=", "nginx")
         self.assert_denied("run", "-e", "ODOO_UPSTREAM_HOST=odoo:8069", "nginx")
         self.assert_denied("run", "-e", "ODOO_UPSTREAM_HOST=odoo;return 200", "nginx")
@@ -93,6 +102,16 @@ class ComposeCommandTest(unittest.TestCase):
         self.assertIn("sh", command)
         self.assert_allowed("run", "builder")
         self.assert_allowed("run", "-e", "VALUE=custom", "builder", "./build")
+
+    def test_only_configured_services_are_allowed(self):
+        self.assertIn("odoo", broker.ALLOWED_SERVICES)
+        self.assertNotIn("codex", broker.ALLOWED_SERVICES)
+        self.assertNotIn("podman-broker", broker.ALLOWED_SERVICES)
+
+    def test_configured_compose_files_are_used(self):
+        command = self.assert_allowed("run", "odoo", "odoo", "--branch", "19.0")[0]
+        for path in broker.COMPOSE_FILES:
+            self.assertIn(str(path), command)
 
     def test_rejects_unapproved_compose_operations(self):
         self.assert_denied("up", "-d")

@@ -16,11 +16,12 @@ REPO = os.environ["PODMAN_BROKER_REPO"]
 ODOO_SRC = Path(os.environ["ODOO_SRC"])
 ODOO_IMAGES_DIR = Path(REPO) / "containers" / "odoo" / "images"
 COMMUNITY = ODOO_SRC / "odoo"
+COMPOSE_FILES = [Path(path) for path in os.environ["PODMAN_BROKER_COMPOSE_FILES"].split(os.pathsep)]
 
 IMAGES = [(18.0, "noble"), (14.0, "jammy"), (6.1, "bionic")]
-ALLOWED_SERVICES = {"odoo", "nginx"} | {
+ALLOWED_SERVICES = {
     service.strip()
-    for service in os.environ.get("PODMAN_BROKER_SERVICES", "").split(",")
+    for service in os.environ["PODMAN_BROKER_SERVICES"].split(",")
     if service.strip()
 }
 
@@ -117,7 +118,8 @@ def prepare_command(argv, requested_image=None, stdin_is_tty=True):
         normalized.insert(1, "-T")
     container_name = f"broker-{args.service}-{uuid.uuid4().hex}"
     normalized[1:1] = ["--name", container_name]
-    return ["podman-compose", *normalized], args.service, container_name, True, environment
+    compose_files = [argument for path in COMPOSE_FILES for argument in ("-f", str(path))]
+    return ["podman-compose", *compose_files, *normalized], args.service, container_name, True, environment
 
 
 class Handler(socketserver.BaseRequestHandler):
