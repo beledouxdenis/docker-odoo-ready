@@ -1,0 +1,6 @@
+{
+  "allowNonWorkspaceAccess": true,
+  "enableTelemetry": false,
+  "enableTerminalSandbox": false,
+  "toolPermission": "always-proceed"
+}

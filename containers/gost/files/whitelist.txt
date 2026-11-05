@@ -1,5 +1,9 @@
+# Odoo
 ocn.odoo.com:443
 pad.odoo.com:443
+runbot*.odoo.com:443
+
+# OpenAI / Codex
 .chatgpt.com:443
 api.openai.com:443
 auth.openai.com:443
@@ -7,4 +11,18 @@ developers.openai.com:443
 releases.openai.com:443
 persistent.oaistatic.com:443
 .codex-pets.net:443
-runbot*.odoo.com:443
+
+# Anthropic / Claude Code
+registry.npmjs.org:443
+api.anthropic.com:443
+statsig.anthropic.com:443
+claude.ai:443
+platform.claude.com:443
+
+# Google Antigravity
+antigravity.google:443
+antigravity.google.com:443
+antigravity-cli-auto-updater-*.*.run.app:443
+accounts.google.com:443
+.googleapis.com:443
+.gstatic.com:443

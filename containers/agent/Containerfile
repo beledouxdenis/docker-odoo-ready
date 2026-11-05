@@ -5,6 +5,7 @@ ENV TERM=xterm-256color
 ENV LANG=C.UTF-8
 ENV LESS=-R
 ENV NODE_PATH=/usr/local/lib/node_modules
+ENV PATH=/home/odoo/.local/bin:$PATH
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ca-certificates curl \
@@ -14,11 +15,15 @@ RUN apt-get update \
  && apt-get update \
  && apt-get install -y --no-install-recommends bubblewrap git google-chrome-stable less nodejs npm pipx poppler-utils \
     postgresql-client procps python3 python3-requests python3-yaml ripgrep rsync sqlite3 unzip vim \
- && npm install -g playwright \
+ && npm install -g playwright @anthropic-ai/claude-code \
  && rm -rf /var/lib/apt/lists/* \
  && userdel ubuntu \
  && useradd --create-home odoo \
- && install -d -o odoo -g odoo /home/odoo/.config
+ && install -d -o odoo -g odoo /home/odoo/.config /home/odoo/.claude /home/odoo/.gemini/antigravity-cli
+
+COPY --chown=odoo:odoo containers/agent/files/codex/config.toml /home/odoo/.codex/config.toml
+COPY --chown=odoo:odoo containers/agent/files/claude/settings.json /home/odoo/.claude/settings.json
+COPY --chown=odoo:odoo containers/agent/files/antigravity/settings.json /home/odoo/.gemini/antigravity-cli/settings.json
 
 USER odoo
 RUN pipx ensurepath
@@ -26,3 +31,4 @@ RUN pipx install ruff
 RUN pipx install semgrep
 
 RUN curl -A "Mozilla/5.0" -fsSL https://chatgpt.com/codex/install.sh | CODEX_NON_INTERACTIVE=1 sh
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash

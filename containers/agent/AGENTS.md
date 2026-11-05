@@ -50,6 +50,6 @@ You are a senior Odoo developer.
 
 ## Task-specific instructions
 
-Additional instructions are available under `/home/odoo/.codex/instructions/`. Before acting on
+Additional instructions are available under `/home/odoo/.agents/instructions/`. Before acting on
 a task, check that directory recursively and read and apply every file whose name or description
 matches the task's subject.

@@ -101,11 +101,18 @@ printf 'PODMAN_CONTAINER_SSHKEY=%s\n' "${key}" >> .env
 
 ```sh
 podman-compose run --rm agent
+# To run another installed agent
+podman-compose run --rm agent codex
+podman-compose run --rm agent claude
+podman-compose run --rm agent agy
 # To mount additional folders to give to the agent
 podman-compose run --rm -v path/to/host/folder:path/in/container agent
 # To run a shell
 podman-compose run --rm agent /bin/bash
 ```
+
+Codex, Claude Code, and Antigravity are configured to run without approval
+prompts inside the agent container.
 
 The agent image includes Google Chrome. Launch Playwright with
 `channel: "chrome"`. Browser configuration is local to each agent container so

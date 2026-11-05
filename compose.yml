@@ -130,10 +130,9 @@ services:
     user: odoo
     environment:
       DISPLAY: :1
-      CODEX_HOME: /home/odoo/.codex
       ODOO_SRC: ${ODOO_SRC:-$HOME/src}
       PODMAN_BROKER_SOCKET: /broker/podman-compose.sock
-      VISUAL: vim  # To be able to use vim as editor in Codex using CTRL + G
+      VISUAL: vim  # To be able to use vim as editor in the agent CLI using CTRL + G
       TERM_PROGRAM: $TERM_PROGRAM  # To support codex pets in Ghostty
       TERM_PROGRAM_VERSION: $TERM_PROGRAM_VERSION
       WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal
@@ -143,16 +142,15 @@ services:
       # package repositories are not included in the proxy whitelist.
       - containers/odoo/proxy.env
     volumes:
+      - agent-home:/home/odoo
       - postgres-socket:/var/run/postgresql:ro
-      - local:/home/odoo/.local
-      - pudb:/home/odoo/.config/pudb
-      - ipython:/home/odoo/.ipython
-      - codex-home:/home/odoo/.codex
       - ./containers/agent/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
-      - ./containers/agent/instructions:/home/odoo/.codex/instructions:ro
-      - ./containers/agent/skills:/home/odoo/.codex/skills:ro
-      - codex-workspace:/workspace
-      - ${HOME}/Downloads/codex-documents:/workspace/documents
+      - ./containers/agent/AGENTS.md:/home/odoo/.claude/CLAUDE.md:ro
+      - ./containers/agent/AGENTS.md:/home/odoo/.gemini/GEMINI.md:ro
+      - ./containers/agent/instructions:/home/odoo/.agents/instructions:ro
+      - ./containers/agent/skills:/home/odoo/.agents/skills:ro
+      - ./containers/agent/skills:/home/odoo/.claude/skills:ro
+      - agent-workspace:/workspace
       - podman-broker-socket:/broker
       - ./containers/podman-broker/podman-compose-client.py:/usr/local/bin/podman-compose:ro
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo
@@ -161,12 +159,9 @@ services:
       - ${ODOO_SRC:-$HOME/src}/upgrade:${ODOO_SRC:-$HOME/src}/upgrade
       - ${ODOO_SRC:-$HOME/src}/upgrade-util:${ODOO_SRC:-$HOME/src}/upgrade-util
       - x11-socket:/tmp/.X11-unix
-      - /etc/localtime:/etc/localtime:ro  # Show Codex limit resets in the host timezone
+      - /etc/localtime:/etc/localtime:ro  # Show agents limit resets in the host timezone
     working_dir: /workspace
-    command:
-      - /bin/sh
-      - -lc
-      - exec codex --ask-for-approval never --sandbox danger-full-access
+    command: codex
 
 volumes:
   postgres-data:
@@ -175,9 +170,8 @@ volumes:
   pudb:
   ipython:
   x11-socket:
-  local:
-  codex-home:
-  codex-workspace:
+  agent-home:
+  agent-workspace:
   podman-broker-socket:
 
 networks:
