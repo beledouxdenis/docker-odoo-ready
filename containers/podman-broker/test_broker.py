@@ -105,7 +105,7 @@ class ComposeCommandTest(unittest.TestCase):
 
     def test_only_configured_services_are_allowed(self):
         self.assertIn("odoo", broker.ALLOWED_SERVICES)
-        self.assertNotIn("codex", broker.ALLOWED_SERVICES)
+        self.assertNotIn("agent", broker.ALLOWED_SERVICES)
         self.assertNotIn("podman-broker", broker.ALLOWED_SERVICES)
 
     def test_configured_compose_files_are_used(self):

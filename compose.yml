@@ -115,11 +115,11 @@ services:
       - ./containers:${PWD}/containers:ro
       - podman-broker-socket:/broker
 
-  codex:
+  agent:
     build:
       context: .
-      dockerfile: containers/codex/Containerfile
-    image: localhost/codex
+      dockerfile: containers/agent/Containerfile
+    image: localhost/agent
     depends_on:
       - podman-broker
       - postgres
@@ -133,7 +133,7 @@ services:
       CODEX_HOME: /home/odoo/.codex
       ODOO_SRC: ${ODOO_SRC:-$HOME/src}
       PODMAN_BROKER_SOCKET: /broker/podman-compose.sock
-      VISUAL: vim  # To be able to use vim as editor in codex using CTRL + G
+      VISUAL: vim  # To be able to use vim as editor in Codex using CTRL + G
       TERM_PROGRAM: $TERM_PROGRAM  # To support codex pets in Ghostty
       TERM_PROGRAM_VERSION: $TERM_PROGRAM_VERSION
       WT_SESSION: $WT_SESSION  # To support codex pets in Windows Terminal
@@ -148,9 +148,9 @@ services:
       - pudb:/home/odoo/.config/pudb
       - ipython:/home/odoo/.ipython
       - codex-home:/home/odoo/.codex
-      - ./containers/codex/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
-      - ./containers/codex/instructions:/home/odoo/.codex/instructions:ro
-      - ./containers/codex/skills:/home/odoo/.codex/skills:ro
+      - ./containers/agent/AGENTS.md:/home/odoo/.codex/AGENTS.md:ro
+      - ./containers/agent/instructions:/home/odoo/.codex/instructions:ro
+      - ./containers/agent/skills:/home/odoo/.codex/skills:ro
       - codex-workspace:/workspace
       - ${HOME}/Downloads/codex-documents:/workspace/documents
       - podman-broker-socket:/broker

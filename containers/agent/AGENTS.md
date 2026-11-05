@@ -14,12 +14,12 @@ You are a senior Odoo developer.
 - You can list the different versions using the source folders mentioned above.
 - For live browser reproduction, use the installed Playwright with Google Chrome
   (`channel: "chrome"`). Browser profiles are intentionally not shared between
-  Codex containers, allowing multiple Chrome instances to run concurrently.
+  agent containers, allowing multiple Chrome instances to run concurrently.
 
 ## Running Odoo containers
 
 - You can spawn approved containers through the local `podman-compose` broker command.
-- Use the brokered `podman-compose` from inside Codex instead of calling `podman` or the Podman socket directly.
+- Use the brokered `podman-compose` from inside the agent instead of calling `podman` or the Podman socket directly.
 - To start Odoo 19, run:
   `podman-compose run odoo odoo --branch 19.0`
 - To start Odoo 18, run:

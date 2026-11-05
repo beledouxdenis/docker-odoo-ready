@@ -43,7 +43,7 @@ ln -s $src/docker-odoo-ready/docker-odoo ~/bin/odoo
 ```sh
 podman-compose build postgres
 podman-compose build odoo
-podman-compose build codex
+podman-compose build agent
 # For a specific image, if needed
 DOCKERFILE=noble podman-compose build odoo
 ```
@@ -55,9 +55,9 @@ odoo -b 19.0 -d 19.0 --image trixie
 odoo shell -b 19.0 -d 19.0
 ```
 
-### Run codex
+### Run the agent
 
-Codex can spawn approved compose services through a constrained `podman-compose`
+The agent can spawn approved compose services through a constrained `podman-compose`
 client. To avoid forwarding the Podman socket, the `podman-broker` parses each
 request and invokes the real `podman-compose` itself.
 
@@ -100,18 +100,18 @@ printf 'PODMAN_CONTAINER_SSHKEY=%s\n' "${key}" >> .env
 ```
 
 ```sh
-podman-compose run --rm codex
-# To mount additional folders to give to codex
-podman-compose run --rm -v path/to/host/folder:path/in/container codex
+podman-compose run --rm agent
+# To mount additional folders to give to the agent
+podman-compose run --rm -v path/to/host/folder:path/in/container agent
 # To run a shell
-podman-compose run --rm codex /bin/bash
+podman-compose run --rm agent /bin/bash
 ```
 
-The Codex image includes Google Chrome. Launch Playwright with
-`channel: "chrome"`. Browser configuration is local to each Codex container so
+The agent image includes Google Chrome. Launch Playwright with
+`channel: "chrome"`. Browser configuration is local to each agent container so
 multiple containers can run Chrome concurrently.
 
-Inside the Codex container, an Odoo server can be started with:
+Inside the agent container, an Odoo server can be started with:
 
 ```sh
 podman-compose run odoo odoo --branch 19.0 -d test_19
@@ -119,13 +119,13 @@ podman-compose run odoo odoo --branch 19.0 -d test_19
 
 The broker injects `--rm`, generates and prints a unique container name, and
 keeps the name registered while the command is running for subsequent approved
-`inspect` or Odoo `exec` operations. With one Odoo run, Codex can reach it at
+`inspect` or Odoo `exec` operations. With one Odoo run, the agent can reach it at
 `http://odoo:8069` through the Compose service alias. When several Odoo runs
 are active, use a specific internal hostname instead of the shared `odoo`
 alias. The broker does not permit publishing container ports on the host.
 
 For Odoo runs, the broker selects the image automatically from the Odoo version
-and host architecture, using the same policy as `docker-odoo`. Codex can choose
+and host architecture, using the same policy as `docker-odoo`. The agent can choose
 an allowed image explicitly when comparing operating-system behavior:
 
 ```sh
