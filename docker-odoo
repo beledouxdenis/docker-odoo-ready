@@ -61,7 +61,7 @@ if args.build:
 command += ["--rm"]
 
 if odoo_command in (None, "server", "shell") and not args.odoo_help and not args.internal_url:
-    command += ["-p", f"{debug_port}:5678"]
+    command += ["-p", f"127.0.0.1:{debug_port}:5678"]
 
 if not sys.stdin.isatty():
     command += ["-T", "-e", "ODOO_PY_COLORS=1"]
