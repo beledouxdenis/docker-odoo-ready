@@ -131,7 +131,7 @@ services:
     environment:
       DISPLAY: :1
       ODOO_SRC: ${ODOO_SRC:-$HOME/src}
-      PODMAN_BROKER_SOCKET: /broker/podman-compose.sock
+      PODMAN_BROKER_SOCKET: /workspace/.podman-broker/podman-compose.sock
       VISUAL: vim  # To be able to use vim as editor in the agent CLI using CTRL + G
       TERM_PROGRAM: $TERM_PROGRAM  # To support codex pets in Ghostty
       TERM_PROGRAM_VERSION: $TERM_PROGRAM_VERSION
@@ -151,7 +151,7 @@ services:
       - ./containers/agent/skills:/home/odoo/.agents/skills:ro
       - ./containers/agent/skills:/home/odoo/.claude/skills:ro
       - agent-workspace:/workspace
-      - podman-broker-socket:/broker
+      - podman-broker-socket:/workspace/.podman-broker
       - ./containers/podman-broker/podman-compose-client.py:/usr/local/bin/podman-compose:ro
       - ${ODOO_SRC:-$HOME/src}/odoo:${ODOO_SRC:-$HOME/src}/odoo
       - ${ODOO_SRC:-$HOME/src}/enterprise:${ODOO_SRC:-$HOME/src}/enterprise
