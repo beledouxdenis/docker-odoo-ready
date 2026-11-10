@@ -26,8 +26,6 @@ RUN PLATFORM=$(dpkg --print-architecture) && \
     python-is-python3 \
     # Install pip and venv, to install python dependencies not packaged by Ubuntu
     python3-pip python3-venv \
-    # Install lessc
-    node-less \
     # Install npm, to install node dependencies not packaged by Ubuntu
     npm \
     # Install wkhtmltopf
